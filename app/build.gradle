@@ -8,11 +8,11 @@ def localProps = new Properties()
 localProps.load(new File(homePath + '/Documents/private/key/app_props.properties').newDataInputStream())
 
 android {
-    namespace 'app.peter.mots'
+    namespace 'app.peter.mos'
     compileSdk 35
 
     defaultConfig {
-        applicationId "app.peter.mots"
+        applicationId "app.peter.mos"
         minSdk 26
         targetSdk 35
         versionCode 1
