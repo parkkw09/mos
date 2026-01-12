@@ -1,0 +1,23 @@
+# Build outputs
+/build/
+
+# Generated files
+/generated/
+
+# JAR files
+*.jar
+
+# Class files
+*.class
+
+# Test results
+/test-results/
+
+# Coverage reports
+/coverage/
+*.exec
+
+# Kotlin compiled files
+/kotlin/
+*.kotlin_module
+*.kotlin_builtins

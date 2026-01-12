@@ -4,17 +4,12 @@
 # Generated files
 /generated/
 
+# AAR files
+*.aar
+
 # Lint
 /lint-results*.html
 /lint-results*.xml
-
-# APK files
-*.apk
-*.aab
-
-# Debug files
-/debug/
-/release/
 
 # Test results
 /test-results/
@@ -24,11 +19,5 @@
 /coverage/
 *.exec
 
-# Proguard
-/proguard/
-mapping.txt
-seeds.txt
-usage.txt
-
-# Local configuration
-local.properties
+# Compose compiler reports
+/compose_compiler/

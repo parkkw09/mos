@@ -1,35 +1,20 @@
 plugins {
-    id 'com.android.application'
+    id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
 }
 
-def homePath = System.properties['user.home']
-def localProps = new Properties()
-localProps.load(new File(homePath + '/Documents/private/key/app_props.properties').newDataInputStream())
-
 android {
-    namespace 'app.peter.mos'
+    namespace 'app.peter.mos.presentation'
     compileSdk 35
 
     defaultConfig {
-        applicationId "app.peter.mos"
         minSdk 26
         targetSdk 35
-        versionCode 1
-        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        resValue("string", "seoul_key",
-                localProps.getProperty("SEOUL_KEY") ?: "\"NOT_FOUND\"")
-        resValue("string", "server_client_id",
-                localProps.getProperty("GOOGLE_AUTH_KEY") ?: "\"NOT_FOUND\"")
-
-        vectorDrawables {
-            useSupportLibrary true
-        }
+        consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
@@ -38,50 +23,49 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    
     kotlinOptions {
         jvmTarget = '17'
     }
+    
     buildFeatures {
         compose true
     }
+    
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.2'
-    }
-    packagingOptions {
-        resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
-        }
     }
 }
 
 dependencies {
-    // Modules
     implementation project(':domain')
     implementation project(':data')
-    implementation project(':presentation')
-
+    
     // Kotlin
     implementation 'androidx.core:core-ktx:1.15.0'
-    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.0')
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
     
     // Hilt
     implementation 'com.google.dagger:hilt-android:2.48'
     kapt 'com.google.dagger:hilt-compiler:2.48'
     
-    // Lifecycle
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
-    
     // Compose
-    implementation 'androidx.activity:activity-compose:1.10.1'
     implementation platform('androidx.compose:compose-bom:2025.03.00')
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.ui:ui-graphics'
     implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+    implementation 'androidx.activity:activity-compose:1.10.1'
+    
+    // Debug
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
     
     // Test
     testImplementation 'junit:junit:4.13.2'
@@ -89,8 +73,4 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     androidTestImplementation platform('androidx.compose:compose-bom:2025.03.00')
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
-    
-    // Debug
-    debugImplementation 'androidx.compose.ui:ui-tooling'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 }
