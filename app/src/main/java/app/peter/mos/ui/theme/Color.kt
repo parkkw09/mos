@@ -1,4 +1,4 @@
-package app.peter.mos.presentation.ui.theme
+package app.peter.mos.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

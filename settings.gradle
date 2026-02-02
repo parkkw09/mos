@@ -16,4 +16,3 @@ rootProject.name = "midst of soul"
 include ':app'
 include ':domain'
 include ':data'
-include ':presentation'
