@@ -11,10 +11,10 @@ java {
 dependencies {
     // Kotlin
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
-    
+
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
-    
+
     // Javax Inject
     implementation 'javax.inject:javax.inject:1'
 }

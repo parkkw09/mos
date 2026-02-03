@@ -1,0 +1,72 @@
+[versions]
+# Team standard versions (aligned)
+kotlin = "2.3.0"
+kotlin-bom = "2.3.0"
+hilt = "2.59"
+core-ktx = "1.17.0"
+lifecycle = "2.10.0"
+splash = "1.2.0"
+activity-compose = "1.12.3"
+compose-bom = "2026.01.01"
+coroutines = "1.7.3"
+ktor = "2.3.2"
+gson = "2.10.1"
+junit = "4.13.2"
+androidx-test-ext-junit = "1.3.0"
+espresso-core = "3.7.0"
+
+[libraries]
+# Kotlin
+kotlinBom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlin-bom" }
+kotlinStdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+
+# AndroidX
+coreKtx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+lifecycleRuntimeKtx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+coreSplashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splash" }
+activityCompose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+
+# Compose (BOM manages versions for Compose libs)
+composeBom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+composeUi = { group = "androidx.compose.ui", name = "ui" }
+composeUiGraphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+composeUiToolingPreview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+material3 = { group = "androidx.compose.material3", name = "material3" }
+composeUiTooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+composeUiTestJunit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+composeUiTestManifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+
+# Hilt
+hiltAndroid = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hiltCompiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+
+# Coroutines
+coroutinesAndroid = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+coroutinesCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+
+# Ktor
+ktorClientCore = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktorClientCio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+ktorClientLogging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktorSerializationGson = { group = "io.ktor", name = "ktor-serialization-gson", version.ref = "ktor" }
+ktorClientContentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+
+# Gson
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+# Test
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidxTestExtJunit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+espressoCore = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+
+# Javax
+javaxInject = { group = "javax.inject", name = "javax.inject", version = "1" }
+
+[plugins]
+androidApplication = { id = "com.android.application", version = "9.0.0" }
+androidLibrary = { id = "com.android.library", version = "9.0.0" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version = "2.3.0" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.0" }
+kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version = "2.3.0" }
+hilt = { id = "com.google.dagger.hilt.android", version = "2.59" }
+ksp = { id = "com.google.devtools.ksp", version = "2.3.4" }
