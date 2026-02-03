@@ -1,6 +1,6 @@
 # 🏗️ MOS Project Architecture Documentation
 
-**최종 업데이트**: 2026-02-02
+**최종 업데이트**: 2026-02-03
 
 ---
 
@@ -17,7 +17,7 @@ graph TD
     Data --> Domain
 ```
 
-- **App**: UI 및 사용자 상호작용 담당 (Android Framework 의존)
+- **App**: UI 및 사용자 상호작용 담당 (Android Framework 의존, Presentation Layer 포함)
 - **Domain**: 비즈니스 로직 및 핵심 모델 (순수 Kotlin, 외부 의존성 없음)
 - **Data**: 데이터 소스 및 저장소 구현 (Repository Pattern)
 
@@ -26,7 +26,7 @@ graph TD
 ## 🛠️ Module Detail
 
 ### 1. 📱 App Module (`:app`)
-사용자에게 보여지는 UI와 상태 관리를 담당합니다.
+사용자에게 보여지는 UI와 상태 관리를 담당합니다. 이전에 분리되어 있던 Presentation 모듈이 통합되었습니다.
 
 *   **UI Framework**: Jetpack Compose
 *   **State Management**: ViewModel + StateFlow
@@ -52,15 +52,18 @@ graph TD
 ### 3. 💾 Data Module (`:data`)
 데이터 소스(API, DB)와의 통신 및 데이터 매핑을 담당합니다.
 
-*   **Repository Implementation**: `SeoulRepositoryImpl`
-    *   Domain의 `SeoulRepository` 인터페이스 구현
-    *   Remote Data(DTO)를 Domain Model로 매핑하여 반환
+*   **Repository Implementation**: 
+    *   `SeoulRepositoryImpl`: `SeoulRepository` 인터페이스 구현, `SeoulApi` 사용
+    *   `GoogleRepository`: (Placeholder) Google/YouTube API 연동 예정, 현재 빈 클래스
+*   **Data Sources**:
+    *   **Remote**: `SeoulApi` (Ktor/Network)
+    *   **Local**: `Local`, `DataBase`, `Preference` (Placeholder) 로컬 데이터베이스 및 설정 저장소 예정
 *   **DI Module**: `DataModule`
     *   `@Binds`를 사용하여 `SeoulRepositoryImpl`을 `SeoulRepository` 타입으로 바인딩
 
 ---
 
-## 📝 Change Log (2026-02-02)
+## 📝 Change Log (2026-02-03)
 
 ### 1. Splash Screen 구현
 *   Android 12 대응 `core-splashscreen` 라이브러리 도입
@@ -79,3 +82,6 @@ graph TD
 
 ### 3. Threading Model 개선
 *   ViewModelScope(`Main`)에서 안전하게 호출할 수 있도록, UseCase 내부에서 `Dispatchers.IO`로 컨텍스트 전환 로직 추가
+
+### 4. Placeholder Classes 추가
+*   향후 기능 확장을 위한 `GoogleRepository`, `Local`, `DataBase`, `Preference` 클래스 뼈대 추가 (구현 예정)

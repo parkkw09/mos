@@ -11,24 +11,34 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.peter.mos.MainViewModel
+import app.peter.mos.domain.model.CulturalEvent
 
 @Composable
 fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val events by viewModel.events.collectAsState()
     val loadState by viewModel.loadState.collectAsState()
 
+    MainScreenContent(events = events, loadState = loadState, modifier = modifier)
+}
+
+@Composable
+fun MainScreenContent(
+        events: List<CulturalEvent>,
+        loadState: String,
+        modifier: Modifier = Modifier
+) {
     Column(modifier = modifier.fillMaxSize()) {
         Text(text = loadState, modifier = Modifier.padding(16.dp))
 
         if (loadState == "Loading") {
-            Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
-            ) { CircularProgressIndicator() }
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         } else {
             LazyColumn(modifier = Modifier.padding(vertical = 4.dp)) {
                 items(items = events) { eventInfo ->
@@ -40,4 +50,31 @@ fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    MainScreenContent(
+            events =
+                    listOf(
+                            CulturalEvent(
+                                    title = "Preview Event 1",
+                                    date = "2023-10-01",
+                                    place = "Seoul Plaza",
+                                    mainImage = "",
+                                    orgName = "Seoul City",
+                                    useFee = "Free"
+                            ),
+                            CulturalEvent(
+                                    title = "Preview Event 2",
+                                    date = "2023-10-02",
+                                    place = "Gangnam",
+                                    mainImage = "",
+                                    orgName = "Gangnam District",
+                                    useFee = "10000"
+                            )
+                    ),
+            loadState = "Complete"
+    )
 }

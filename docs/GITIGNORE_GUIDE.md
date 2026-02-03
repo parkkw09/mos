@@ -8,7 +8,6 @@
 mos/
 ├── .gitignore              # 루트 (전체 프로젝트)
 ├── app/.gitignore          # app 모듈
-├── presentation/.gitignore # presentation 모듈
 ├── data/.gitignore         # data 모듈
 └── domain/.gitignore       # domain 모듈
 ```
@@ -57,24 +56,7 @@ mos/
 
 ---
 
-### 3. **presentation/.gitignore** (프레젠테이션 모듈)
-
-**대상**: Android Library 모듈 (UI)
-
-**주요 무시 항목**:
-- ✅ 빌드 산출물 (`/build/`)
-- ✅ AAR 파일 (Android Archive)
-- ✅ Lint 리포트
-- ✅ 테스트 결과
-- ✅ **Compose Compiler 리포트** (`/compose_compiler/`)
-
-**특징**:
-- AAR 파일 제외 (라이브러리 산출물)
-- Compose 관련 생성 파일 제외
-
----
-
-### 4. **data/.gitignore** (데이터 모듈)
+### 3. **data/.gitignore** (데이터 모듈)
 
 **대상**: Android Library 모듈 (Data Layer)
 
@@ -94,7 +76,7 @@ mos/
 
 ---
 
-### 5. **domain/.gitignore** (도메인 모듈)
+### 4. **domain/.gitignore** (도메인 모듈)
 
 **대상**: Pure Kotlin/Java Library 모듈
 
@@ -159,7 +141,6 @@ git push
 루트 .gitignore (전체 프로젝트)
     ↓
     ├── app/.gitignore (APK, Release 빌드)
-    ├── presentation/.gitignore (AAR, Compose)
     ├── data/.gitignore (AAR, Kapt, DB)
     └── domain/.gitignore (JAR, Kotlin)
 ```
@@ -219,7 +200,6 @@ git ls-files --others --exclude-standard
 
 - ✅ **루트**: 전체 프로젝트 공통 + 보안 파일
 - ✅ **app**: APK, Release 빌드 산출물
-- ✅ **presentation**: AAR, Compose 관련 파일
 - ✅ **data**: AAR, Kapt, Database 파일
 - ✅ **domain**: JAR, Kotlin 컴파일 파일
 

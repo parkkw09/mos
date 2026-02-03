@@ -1,3 +1,6 @@
+import java.util.Properties
+import kotlin.apply
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.hilt)
@@ -5,16 +8,13 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-// NOTE: Loading local properties from an absolute user path. Consider moving secrets to local.properties or env vars.
-// Safer loading: check file existence, use .use for InputStream, and avoid embedding extra quotes in resValue defaults.
-//val homePath: String = System.getProperty("user.home") ?: "/Users/home"
-//val propsFile = file("${homePath}/Documents/private/key/app_props.properties")
-//val localProps = Properties().load(propsFile.inputStream())
-//if (propsFile != null && propsFile.exists()) {
-//    propsFile.inputStream().use { localProps.load(it) }
-//} else {
-//    logger.warn("Local properties file not found: ${propsFile?.path ?: "(home path missing)"}")
-//}
+val homePath: String = System.getProperty("user.home") ?: "/Users/home"
+val propsFile = file("${homePath}/Documents/private/key/app_props.properties")
+val localProps = Properties().apply {
+    if (propsFile.exists()) {
+        propsFile.inputStream().use { load(it) }
+    }
+}
 
 android {
     namespace = "app.peter.mos"
@@ -31,11 +31,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // resValue uses properties from localProps; verify escaping and presence of keys
-//        resValue("string", "seoul_key",
-//            localProps.getProperty("SEOUL_KEY") ?: "NOT_FOUND")
-//        resValue("string", "server_client_id",
-//            localProps.getProperty("GOOGLE_AUTH_KEY") ?: "NOT_FOUND")
+        resValue("string", "seoul_key",
+            localProps.getProperty("SEOUL_KEY") ?: "NOT_FOUND")
+        resValue("string", "server_client_id",
+            localProps.getProperty("GOOGLE_AUTH_KEY") ?: "NOT_FOUND")
 
         vectorDrawables {
             useSupportLibrary = true
@@ -54,7 +53,7 @@ android {
     }
     buildFeatures {
         compose = true
-//        resValues = true
+        resValues = true
     }
 }
 
