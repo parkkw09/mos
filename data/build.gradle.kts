@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 android {
@@ -17,8 +18,8 @@ android {
         getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    file("proguard-rules.pro")
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                file("proguard-rules.pro")
             )
         }
     }
@@ -27,8 +28,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     testOptions {
-        this.unitTests.isIncludeAndroidResources = false
+        unitTests.isIncludeAndroidResources = false
     }
 }
 
@@ -46,20 +48,22 @@ dependencies {
     // Coroutines
     implementation(libs.coroutinesAndroid)
 
-    // Retrofit / OkHttp
-    implementation(libs.retrofit)
-    implementation(libs.retrofitConverterGson)
-    implementation(libs.okhttp)
-    implementation(libs.okhttpLoggingInterceptor)
-
-    // Ktor (preserving as it was there)
+    // Ktor
     implementation(libs.ktorClientCore)
     implementation(libs.ktorClientCio)
     implementation(libs.ktorClientLogging)
-    implementation(libs.ktorClientContentNegotiation)
     implementation(libs.ktorSerializationKotlinxJson)
+    implementation(libs.ktorClientContentNegotiation)
 
-    // Serialization / Gson
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+
+    // OkHttp
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLoggingInterceptor)
+
+    // Serialization
     implementation(libs.kotlinxSerializationJson)
     implementation(libs.gson)
 
