@@ -1,139 +1,63 @@
-# 프로젝트 개선 사항
+# 프로젝트 개선 사항 및 기술 부채
 
-**날짜**: 2026-01-12  
+**최종 업데이트**: 2026-02-06  
 **작업자**: AI Assistant
 
-## 개선 완료 항목 ✅
+## 최근 개선 완료 항목 (2026-02-03 ~ 2026-02-06) ✅
 
-### 1. README.md 업데이트
+### 1. 모듈 구조 최적화 (Consolidation)
+- **변경 사항**: `presentation` 모듈을 `app` 모듈로 통합하여 3개 모듈 구조로 개편.
+- **이유**: 단순한 앱 구조에서 불필요한 모듈 분리로 인한 빌드 오버헤드와 복잡성을 줄이고, Presentation 로직과 App 진입점 간의 결합을 효율적으로 관리하기 위함.
 
-#### 변경 사항:
-- **JDK 버전 요구사항 수정**: JDK 11 → JDK 17
-- **현재 구현 상태 명시**: 
-  - ✅ Seoul 문화행사 API 연동 완료
-  - ⏳ Google/YouTube 기능 (모델만 정의, 미구현)
-  - ⏳ Translator 기능 (클래스만 생성, 미구현)
-- **기술 스택 정보 추가**:
-  - Kotlin 1.7.20
-  - Gradle 8.11.1
-  - Jetpack Compose (Material3)
-  - Ktor 2.3.2
-  - Gson 2.10.1
-- **프로젝트 구조 상세화**: 각 패키지의 역할과 구조를 명확히 설명
-- **다음 권장 작업 구체화**: 4개 카테고리로 분류하여 실행 가능한 작업 목록 제시
+### 2. Clean Architecture 강화
+- **변경 사항**: 
+  - `SeoulUseCase`를 통한 비즈니스 로직 캡슐화.
+  - Repository 인터페이스(`domain`)와 구현체(`data`)의 명확한 분리.
+  - Hilt `@Binds`를 이용한 의존성 역전 원칙(DIP) 적용.
+- **이유**: 테스트 가능성(Testability)을 높이고 각 레이어 간의 결합도를 낮추기 위함.
 
-#### 이유:
-- 실제 프로젝트 상태와 README 내용의 불일치 해소
-- 신규 개발자의 온보딩 경험 개선
-- 프로젝트의 현재 상태를 정확하게 반영
+### 3. Splash Screen 및 초기화 로직 개선
+- **변경 사항**: `androidx.core:core-splashscreen` 도입 및 `MainViewModel`의 데이터 로딩 상태(`isReady`)와 연동.
+- **이유**: Android 12 이상에서의 일관된 스플래시 경험 제공 및 데이터 로딩 완료 전 빈 화면 노출 방지.
+
+### 4. 문서화 최신화
+- **변경 사항**: `README.md`, `CHANGELOG.md`, `ARCHITECTURE.md` 등을 현재 코드 베이스에 맞춰 전면 업데이트.
+- **이유**: 프로젝트 현행화를 통해 협업 및 유지보수 효율성 증대.
 
 ---
 
-### 2. app/build.gradle 중복 의존성 제거
+## 남은 개선 과제 (우선순위순) 📋
 
-#### 변경 사항:
-```gradle
-// 제거된 중복 의존성 (line 72)
-- implementation 'androidx.core:core-ktx:1.15.0'
-```
+### 1순위: 기능 보완
+- [ ] **GoogleRepository 구현**: 정의만 되어 있는 YouTube API 연동 기능을 실제로 구현하여 영상 정보 제공.
+- [ ] **상세 화면 구현**: 목록 클릭 시 문화행사 상세 정보를 보여주는 화면 추가.
+- [ ] **Navigation 적용**: Jetpack Navigation Compose를 도입하여 화면 전환 관리.
 
-#### 이유:
-- 동일한 의존성이 line 63에 이미 선언되어 있음
-- 빌드 시간 최적화
-- 의존성 관리 명확성 향상
+### 2순위: 품질 개선
+- [ ] **단위 테스트 작성**: 
+  - `SeoulUseCase` 단위 테스트 (Mock Repository 사용).
+  - `MainViewModel` 상태 변화 테스트.
+- [ ] **로컬 캐싱 도입**: Room Database를 사용하여 오프라인에서도 이전에 불러온 데이터를 확인할 수 있도록 개선.
 
----
-
-### 3. Theme.kt의 Deprecated API 수정
-
-#### 변경 사항:
-```kotlin
-// 이전 (deprecated)
-window.statusBarColor = colorScheme.primary.toArgb()
-WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
-
-// 이후 (현대적 방식)
-WindowCompat.getInsetsController(window, view).apply {
-    isAppearanceLightStatusBars = !darkTheme
-}
-```
-
-#### 이유:
-- Android 15+ (API 35)에서 `window.statusBarColor`가 deprecated됨
-- WindowInsetsController를 사용한 현대적인 방식으로 전환
-- 상태바 색상을 시스템 기본값으로 사용 (Material3 권장사항)
-- 다크 모드 로직 수정 (`darkTheme` → `!darkTheme`)
-
----
-
-## 빌드 검증 ✅
-
-### 실행한 검증:
-1. **Clean Build**: `./gradlew clean build --quiet`
-   - ✅ 성공 (Exit code: 0)
-2. **Lint 검사**: `./gradlew :app:lintDebug`
-   - ✅ 경고 없음
-
-### 결과:
-- 모든 변경 사항이 빌드 시스템과 호환됨
-- 린트 경고 해결됨
-- 프로젝트가 정상적으로 컴파일됨
-
----
-
-## 남은 권장 작업 📋
-
-### 우선순위 높음:
-1. **GoogleRepository 구현**
-   - YouTube API 연동
-   - 데이터 모델 활용
-   
-2. **Translator 클래스 구현**
-   - 목적 정의 (다국어 처리 vs 텍스트 변환)
-   - 실제 기능 구현
-
-### 우선순위 중간:
-3. **로컬 데이터베이스 구현**
-   - Room 또는 SQLite 사용
-   - 오프라인 지원
-   
-4. **단위 테스트 추가**
-   - Repository 테스트
-   - ViewModel 테스트 (필요시)
-   
-5. **UI 테스트 추가**
-   - Compose UI 테스트
-   - 통합 테스트
-
-### 우선순위 낮음:
-6. **CI/CD 구축**
-   - GitHub Actions 설정
-   - 자동 빌드 및 테스트
-   
-7. **문서화**
-   - KDoc 추가
-   - 라이선스 파일
-   - 기여 가이드라인
+### 3순위: 운영 및 고도화
+- [ ] **CI/CD 구축**: GitHub Actions를 통한 자동 빌드 및 테스트 환경 구축.
+- [ ] **Translator 구현**: 도큐먼트에는 언급되었으나 현재 파일이 없는 `Translator`의 목적을 정의하고 구현.
+- [ ] **코드 스타일 관리**: Detekt 및 ktlint 적용.
 
 ---
 
 ## 기술 부채 현황
 
-### 해결됨:
-- ✅ README.md 정확성
-- ✅ 중복 의존성
-- ✅ Deprecated API 사용
+### 해결됨 ✅
+- **모듈 구조 불일치**: 4개 -> 3개 통합 완료.
+- **Domain 레이어 부재**: UseCase 및 Interface 분리 완료.
+- **문서 최신화**: 완료.
 
-### 남아있음:
-- ⏳ 빈 클래스들 (GoogleRepository, Translator)
-- ⏳ 테스트 커버리지 부족
-- ⏳ ProGuard/R8 설정 미비
-- ⏳ CI/CD 미구축
+### 남아있음 ⏳
+- **테스트 코드 부재**: 현재 비즈니스 로직에 대한 테스트 코드가 전혀 없음.
+- **비정상 종료 대응**: API 호출 실패 시 에러 핸들링 UI(Error Screen/SnackBar) 보완 필요.
+- **오프라인 미지원**: 네트워크 연결 없이는 앱 사용 불가.
 
 ---
 
-## 참고 사항
-
-- 모든 변경 사항은 하위 호환성을 유지합니다
-- 기존 기능에 영향을 주지 않습니다
-- 빌드 및 린트 검사를 통과했습니다
+*작업 관련 문의나 추가 개선 사항이 있다면 CHANGELOG를 참고해 주세요.*

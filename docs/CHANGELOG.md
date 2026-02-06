@@ -5,23 +5,38 @@
 
 ---
 
-## [2026-01-24] - 프로젝트 규칙 및 문서화 체계 정립
+## [2026-02-03] - 스플래시 화면 구현 및 클린 아키텍처 강화
 
 ### 완료한 작업
-- `.gemini/rules.md` 업데이트
-  - 새 챗 시작 시 필수 문서 읽기 규칙 추가
-  - 작업 완료 시 문서화 규칙 추가
-  - 코드 작업 규칙 추가
-- `docs/CHANGELOG.md` 생성 (이 문서)
+- **Splash Screen 구현**: Android 12 대응 `core-splashscreen` 도입 및 데이터 로딩 동기화
+- **도메인 레이어 강화**: 
+  - `SeoulUseCase` 구현 및 `Dispatchers.IO` 적용
+  - `SeoulRepository` 인터페이스 및 `SeoulRepositoryImpl` 분리
+- **DI 정교화**: Hilt를 사용하여 UseCase 및 Repository 바인딩 최적화
+- **ViewModel 도입**: `MainViewModel`을 통한 상태 관리 및 UseCase 호출
 
 ### 변경된 파일
-- `.gemini/rules.md`
-- `docs/CHANGELOG.md` (신규)
+- `app/src/main/java/app/peter/mos/MainActivity.kt`
+- `app/src/main/java/app/peter/mos/MainViewModel.kt`
+- `domain/src/main/java/app/peter/mos/domain/usecase/SeoulUseCase.kt`
+- `data/src/main/java/app/peter/mos/data/repositories/SeoulRepositoryImpl.kt`
 
-### 다음 할 일
-- GoogleRepository 구현 (YouTube API 연동)
-- Translator 클래스 구현
-- ViewModel 추가 (Hilt + AAC ViewModel)
+---
+
+## [2026-02-02] - 모듈 구조 간소화 (Consolidation)
+
+### 완료한 작업
+- **모듈 통합**: 4개 모듈(app, presentation, domain, data)에서 3개 모듈(app, domain, data)로 통합
+- **Presentation 통합**: `presentation` 모듈의 UI 및 테마 코드를 `app` 모듈로 이관
+- **의존성 단순화**: 모듈 간 불필요한 의존성 제거 및 빌드 속도 개선
+
+### 변경된 파일
+- `settings.gradle.kts`, `build.gradle.kts`
+- `app/src/main/java/app/peter/mos/ui/` (Presentation 코드 이관)
+
+---
+
+## [2026-01-24] - 프로젝트 규칙 및 문서화 체계 정립
 
 ---
 
@@ -65,28 +80,24 @@
 
 # 📌 빠른 참조
 
-## 현재 프로젝트 상태 (2026-01-24 기준)
+## 현재 프로젝트 상태 (2026-02-06 기준)
 
 ### ✅ 완료된 기능
 | 기능 | 상태 | 설명 |
 |------|------|------|
-| 모듈화 | ✅ 완료 | app, presentation, domain, data 4개 모듈 |
-| Hilt DI | ✅ 완료 | AppModule, NetworkModule, RepositoryModule |
+| 모듈화 | ✅ 완료 | app, domain, data 3개 모듈 (Consolidated) |
+| Architecture | ✅ 완료 | Clean Architecture (MVVM + UseCase) |
+| Hilt DI | ✅ 완료 | Interface-Implementation 바인딩 포함 |
+| Splash Screen | ✅ 완료 | core-splashscreen 적용 및 데이터 로딩 동기화 |
 | Seoul 문화행사 API | ✅ 완료 | SeoulRepository, SeoulApi 구현됨 |
-| MainScreen UI | ✅ 완료 | 문화행사 목록 표시 (LazyColumn) |
-| Theme | ✅ 완료 | Material3 테마 적용 |
+| ViewModel | ✅ 완료 | MainViewModel을 통한 UI 상태 관리 |
+| MainScreen UI | ✅ 완료 | 문화행사 목록 표시 및 상태 표시 |
 
-### ⏳ 미구현 (빈 클래스)
+### ⏳ 미구현 (Placeholder)
 | 항목 | 파일 위치 | 비고 |
 |------|-----------|------|
 | GoogleRepository | `data/.../repositories/GoogleRepository.kt` | 빈 클래스 |
-| Translator | `domain/.../tool/Translator.kt` | 빈 클래스 |
-| UseCase | `domain/.../usecase/UseCase.kt` | 빈 클래스 |
-| DomainModel | `domain/.../model/DomainModel.kt` | 빈 클래스 |
-
-### 📁 Google/YouTube 모델 (정의만 됨)
-- `data/.../source/model/google/GoogleResponse.kt`
-- `data/.../source/model/google/youtube/` (4개 파일)
+| Translator | `domain/.../tool/Translator.kt` | (파일 없음) 목적 정의 필요 |
 
 ---
 
@@ -95,6 +106,7 @@
 - **JDK**: 17
 - **Jetpack Compose**: BOM 2025.03.00
 - **Hilt**: 2.48
+- **splashscreen**: 1.0.1
 - **Ktor**: 2.3.2
 - **Gson**: 2.10.1
 
@@ -103,22 +115,17 @@
 ## 모듈 구조
 ```
 ┌─────────────┐
-│     app     │ ← MainActivity, MosApplication
+│     app     │ ← MainActivity, MainViewModel, Splash, UI
 └──────┬──────┘
        │
        ▼
 ┌─────────────┐
-│presentation │ ← MainScreen, Theme
+│    data     │ ← SeoulRepositoryImpl, SeoulApi, Network
 └──────┬──────┘
        │
        ▼
 ┌─────────────┐
-│    data     │ ← SeoulRepository, SeoulApi, Network
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│   domain    │ ← UseCase, DomainModel, Translator (미구현)
+│   domain    │ ← SeoulUseCase, SeoulRepository (Interface), CulturalEvent
 └─────────────┘
 ```
 
@@ -126,20 +133,18 @@
 
 ## 🎯 다음 우선순위 작업
 
-### 1순위 (구조 개선)
-- [ ] ViewModel 추가 (Hilt + AAC ViewModel)
-- [ ] MainScreen에서 Repository 직접 사용 → ViewModel로 분리
+### 1순위 (기능 확장)
+- [ ] GoogleRepository 구현 (YouTube API 연동)
+- [ ] 상세 화면(Detail Screen) 구현 및 네비게이션 적용
 
-### 2순위 (기능 구현)
-- [ ] UseCase 구현 (GetCulturalEventsUseCase)
-- [ ] GoogleRepository 구현 (YouTube API)
-- [ ] Translator 구현 (목적 정의 필요)
+### 2순위 (품질 개선)
+- [ ] UseCase 및 ViewModel 단위 테스트 작성
+- [ ] Room Database를 이용한 로컬 캐싱 도입
 
-### 3순위 (품질 개선)
-- [ ] 단위 테스트 추가
-- [ ] Navigation Compose 적용
-- [ ] Room Database 추가
+### 3순위 (고도화)
+- [ ] CI (GitHub Actions) 연동
+- [ ] Translator 구현 (다국어 지원 등)
 
 ---
 
-*마지막 업데이트: 2026-01-24*
+*마지막 업데이트: 2026-02-06*
