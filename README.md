@@ -8,11 +8,13 @@
 ## 현재 구현 상태
 
 - ✅ **서울 문화행사 API 연동 완료**
+- ✅ **로컬 캐싱(Room) 도입 완료**
 - ✅ **모듈 구조 최적화** (app, domain, data)
 - ✅ **Clean Architecture 적용 완료** (ViewModel -> UseCase -> Repository)
 - ✅ **Hilt DI 적용 완료**
 - ✅ **Splash Screen 구현 완료**
 - ⏳ Google/YouTube 기능 (모델만 정의, 미구현)
+- ⏳ 상세 화면 구현 및 Navigation 적용 (미구현)
 - ⏳ Translator 기능 (미구현)
 
 ## 빠른 시작
@@ -21,9 +23,9 @@
 
 - **JDK 17**
 - **Android SDK**
-  - compileSdk: 35
-  - minSdk: 26 (Android 8.0 Oreo)
-  - targetSdk: 35
+  - compileSdk: 36
+  - minSdk: 27 (Android 8.1 Oreo)
+  - targetSdk: 36
 - **Gradle Wrapper** 사용 (프로젝트 내 `gradlew`)
 - **인터넷 연결** (INTERNET 퍼미션 필요)
 
@@ -100,7 +102,8 @@ app → data → domain
 
 ### 네트워킹 & 데이터
 - **Ktor**: 2.3.2 (Client Core, CIO, Logging, Content Negotiation)
-- **JSON Parsing**: Gson 2.10.1
+- **Serialization**: Kotlinx Serialization 1.6.0
+- **Database**: Room 2.6.1
 - **Concurrency**: Coroutines 1.7.3
 
 ## 테스트
@@ -118,26 +121,13 @@ app → data → domain
 ## 주요 문서 (docs/)
 
 - [ARCHITECTURE.md](./docs/ARCHITECTURE.md): 상세 아키텍처 및 데이터 흐름
-- [MODULARIZATION.md](./docs/MODULARIZATION.md): 모듈화 과정 및 구조 상세
+- [TODO.md](./docs/TODO.md): **(중요)** 향후 계획 및 모든 액션 아이템 통합 관리
 - [CHANGELOG.md](./docs/CHANGELOG.md): 프로젝트 변경 이력
 - [IMPROVEMENTS.md](./docs/IMPROVEMENTS.md): 개선 사항 및 기술 부채
+- [MODULARIZATION.md](./docs/MODULARIZATION.md): 모듈화 과정 및 구조 상세
 
-## 다음 작업 로드맵
-
-1. **기능 확장**
-   - Google/YouTube API 실구현
-   - 로컬 캐싱 (Room) 도입
-   - 태그 기반 검색 및 필터링
-
-2. **UI/UX 개선**
-   - Navigation Compose 적용
-   - 상세 화면(Detail Screen) 구현
-   - 다국어 지원 (Translator 구현)
-
-3. **품질 관리**
-   - UseCase 및 ViewModel 단위 테스트
-   - Detekt/ktlint 적용
-   - CI (GitHub Actions) 연동
+## 🎯 향후 로드맵 및 할 일
+- 모든 기능 확장 계획 및 액션 아이템은 [TODO.md](./docs/TODO.md)에서 통합 관리됩니다.
 
 ## 라이선스
 

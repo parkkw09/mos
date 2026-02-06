@@ -5,18 +5,32 @@
 
 ---
 
-## [2026-02-06] - 의존성 주입(DI) 아키텍처 개선
+## [2026-02-06] - 로컬 캐싱(Room) 도입 및 네트워크 스택 최적화
 
 ### 완료한 작업
-- **SeoulApi DI 적용**: `SeoulApi`를 Hilt 생성자 주입 방식으로 변경하고 `@Named("seoul_key")`를 통해 API 키 주입
-- **SeoulRepositoryImpl 리팩토링**: `SeoulApi`를 직접 생성하던 방식에서 생성자 주입을 받는 방식으로 개선
-- **DataModule 정리**: `SeoulRepositoryImpl`의 수동 Provider를 제거하고 `@Inject`와 `@Binds`를 통한 자동 의존성 해결 적용
-- **빌드 검증**: `./gradlew build`를 통한 빌드 및 린트 체크 완료
+- **Room 데이터베이스 구축**:
+  - `CulturalEventEntity`, `CulturalEventDao`, `AppDatabase` 정의 및 로컬 영속성 계층 구현
+  - `DatabaseModule`을 통한 Room DB 및 DAO 의존성 주입 설정
+- **네트워크 스택 개선 (Gson → Kotlinx Serialization)**:
+  - Ktor `ContentNegotiation`에 `kotlinx-serialization-json` 적용
+  - `SeoulApi` 및 데이터 모델들(`CulturalEventInfo` 등)을 `@Serializable`로 전환하여 런타임 성능 및 안정성 개선
+- **Repository 캐싱 전략 구현**:
+  - `SeoulRepositoryImpl`에 로컬 우선(Cache-then-Network) 전략 적용
+  - 로컬 데이터 부재 시 혹은 강제 새로고침 시에만 리모트 데이터 요청 및 로컬 DB 갱신
+- **의존성 주입(DI) 아키텍처 개선**:
+  - `SeoulApi`를 Hilt 생성자 주입 방식으로 변경하고 `@Named("seoul_key")`를 통해 API 키 분리 주입
+  - `DataModule` 정리 및 `@Inject`, `@Binds`를 통한 자동 의존성 해결 적용
+- **빌드 및 런타임 오류 수정**:
+  - `SerializationException` (네트워크 데이터 파싱 오류) 해결
+  - KSP 및 Gradle 버전 호환성 문제 해결을 통한 빌드 안정화
 
 ### 변경된 파일
-- `data/src/main/java/app/peter/mos/data/source/remote/SeoulApi.kt`
+- `data/src/main/java/app/peter/mos/data/source/local/` (Room 관련 엔티티 및 DAO 추가)
+- `data/src/main/java/app/peter/mos/data/tool/db/AppDatabase.kt`
+- `data/src/main/java/app/peter/mos/data/tool/network/Network.kt`
 - `data/src/main/java/app/peter/mos/data/repositories/SeoulRepositoryImpl.kt`
-- `data/src/main/java/app/peter/mos/data/di/DataModule.kt`
+- `data/src/main/java/app/peter/mos/data/di/DataModule.kt`, `AppModule.kt`
+- `data/build.gradle.kts` (Dependencies 업데이트)
 
 ---
 
@@ -146,20 +160,12 @@
 
 ---
 
-## 🎯 다음 우선순위 작업
+---
 
-### 1순위 (기능 확장)
-- [ ] GoogleRepository 구현 (YouTube API 연동)
-- [x] SeoulApi 의존성 주입(DI) 적용
-- [ ] 상세 화면(Detail Screen) 구현 및 네비게이션 적용
+## 🎯 향후 계획
+- 모든 할 일 및 액션 아이템은 [TODO.md](./TODO.md)에서 통합 관리됩니다.
 
-### 2순위 (품질 개선)
-- [ ] UseCase 및 ViewModel 단위 테스트 작성
-- [ ] Room Database를 이용한 로컬 캐싱 도입
-
-### 3순위 (고도화)
-- [ ] CI (GitHub Actions) 연동
-- [ ] Translator 구현 (다국어 지원 등)
+---
 
 ---
 
