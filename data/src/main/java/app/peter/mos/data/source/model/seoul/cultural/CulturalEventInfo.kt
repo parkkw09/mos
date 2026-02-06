@@ -1,35 +1,39 @@
 package app.peter.mos.data.source.model.seoul.cultural
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class CulturalEventInfo(
-    @SerializedName("list_total_count") val count: Int,
-    @SerializedName("RESULT") val result: CulturalEventInfoResult,
-    @SerializedName("row") val list: List<CulturalEventInfoData>
+        @SerialName("list_total_count") val count: Int,
+        @SerialName("RESULT") val result: CulturalEventInfoResult,
+        @SerialName("row") val list: List<CulturalEventInfoData>
 )
 
+@Serializable
 data class CulturalEventInfoResult(
-    @SerializedName("CODE") val code: String,
-    @SerializedName("MESSAGE") val message: String
+        @SerialName("CODE") val code: String,
+        @SerialName("MESSAGE") val message: String
 )
 
+@Serializable
 data class CulturalEventInfoData(
-    @SerializedName("CODENAME") val codeName: String,
-    @SerializedName("GUNAME") val guName: String,
-    @SerializedName("TITLE") val title: String,
-    @SerializedName("DATE") val date: String,
-    @SerializedName("PLACE") val place: String,
-    @SerializedName("ORG_NAME") val orgName: String,
-    @SerializedName("USE_TRGT") val useTarget: String,
-    @SerializedName("USE_FEE") val useFee: String,
-    @SerializedName("PLAYER") val player: String,
-    @SerializedName("PROGRAM") val program: String,
-    @SerializedName("ETC_DESC") val etcDesc: String,
-    @SerializedName("ORG_LINK") val orgLink: String,
-    @SerializedName("MAIN_IMG") val mainImage: String,
-    @SerializedName("RGSTDATE") val registrationDate: String,
-    @SerializedName("TICKET") val ticket: String,
-    @SerializedName("STRTDATE") val startDate: String,
-    @SerializedName("END_DATE") val endDate: String,
-    @SerializedName("THEMECODE") val themeCode: String
+        @SerialName("CODENAME") val codeName: String,
+        @SerialName("GUNAME") val guName: String,
+        @SerialName("TITLE") val title: String,
+        @SerialName("DATE") val date: String,
+        @SerialName("PLACE") val place: String,
+        @SerialName("ORG_NAME") val orgName: String,
+        @SerialName("USE_TRGT") val useTarget: String,
+        @SerialName("USE_FEE") val useFee: String,
+        @SerialName("PLAYER") val player: String,
+        @SerialName("PROGRAM") val program: String,
+        @SerialName("ETC_DESC") val etcDesc: String,
+        @SerialName("ORG_LINK") val orgLink: String,
+        @SerialName("MAIN_IMG") val mainImage: String,
+        @SerialName("RGSTDATE") val registrationDate: String,
+        @SerialName("TICKET") val ticket: String,
+        @SerialName("STRTDATE") val startDate: String,
+        @SerialName("END_DATE") val endDate: String,
+        @SerialName("THEMECODE") val themeCode: String
 )

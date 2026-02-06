@@ -1,7 +1,7 @@
 package app.peter.mos.data.source.model.seoul.cultural
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-data class CulturalEventInfoResponse(
-    @SerializedName("culturalEventInfo") val info: CulturalEventInfo
-)
+@Serializable
+data class CulturalEventInfoResponse(@SerialName("culturalEventInfo") val info: CulturalEventInfo)

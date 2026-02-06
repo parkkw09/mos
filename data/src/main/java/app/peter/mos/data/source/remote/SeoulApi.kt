@@ -4,9 +4,12 @@ import app.peter.mos.data.source.model.seoul.cultural.CulturalEventInfoResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import javax.inject.Inject
+import javax.inject.Named
 
-class SeoulApi(private val client: HttpClient,
-               private val key: String) {
+class SeoulApi
+@Inject
+constructor(private val client: HttpClient, @Named("seoul_key") private val key: String) {
 
     private val baseUrl = "http://openapi.seoul.go.kr:8088"
 

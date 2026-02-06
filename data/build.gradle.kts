@@ -16,7 +16,10 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), file("proguard-rules.pro"))
+            proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    file("proguard-rules.pro")
+            )
         }
     }
 
@@ -25,7 +28,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     testOptions {
-        this.unitTests.isIncludeAndroidResources = false // placeholder; verify original semantics
+        this.unitTests.isIncludeAndroidResources = false
     }
 }
 
@@ -38,21 +41,32 @@ dependencies {
 
     // Hilt
     implementation(libs.hiltAndroid)
-    // Hilt compiler via KSP
     ksp(libs.hiltCompiler)
 
     // Coroutines
     implementation(libs.coroutinesAndroid)
 
-    // Ktor
+    // Retrofit / OkHttp
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLoggingInterceptor)
+
+    // Ktor (preserving as it was there)
     implementation(libs.ktorClientCore)
     implementation(libs.ktorClientCio)
     implementation(libs.ktorClientLogging)
-    implementation(libs.ktorSerializationGson)
     implementation(libs.ktorClientContentNegotiation)
+    implementation(libs.ktorSerializationKotlinxJson)
 
-    // Gson
+    // Serialization / Gson
+    implementation(libs.kotlinxSerializationJson)
     implementation(libs.gson)
+
+    // Room
+    implementation(libs.roomRuntime)
+    implementation(libs.roomKtx)
+    ksp(libs.roomCompiler)
 
     // Test
     testImplementation(libs.junit)

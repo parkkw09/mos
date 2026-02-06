@@ -5,6 +5,21 @@
 
 ---
 
+## [2026-02-06] - 의존성 주입(DI) 아키텍처 개선
+
+### 완료한 작업
+- **SeoulApi DI 적용**: `SeoulApi`를 Hilt 생성자 주입 방식으로 변경하고 `@Named("seoul_key")`를 통해 API 키 주입
+- **SeoulRepositoryImpl 리팩토링**: `SeoulApi`를 직접 생성하던 방식에서 생성자 주입을 받는 방식으로 개선
+- **DataModule 정리**: `SeoulRepositoryImpl`의 수동 Provider를 제거하고 `@Inject`와 `@Binds`를 통한 자동 의존성 해결 적용
+- **빌드 검증**: `./gradlew build`를 통한 빌드 및 린트 체크 완료
+
+### 변경된 파일
+- `data/src/main/java/app/peter/mos/data/source/remote/SeoulApi.kt`
+- `data/src/main/java/app/peter/mos/data/repositories/SeoulRepositoryImpl.kt`
+- `data/src/main/java/app/peter/mos/data/di/DataModule.kt`
+
+---
+
 ## [2026-02-03] - 스플래시 화면 구현 및 클린 아키텍처 강화
 
 ### 완료한 작업
@@ -87,7 +102,7 @@
 |------|------|------|
 | 모듈화 | ✅ 완료 | app, domain, data 3개 모듈 (Consolidated) |
 | Architecture | ✅ 완료 | Clean Architecture (MVVM + UseCase) |
-| Hilt DI | ✅ 완료 | Interface-Implementation 바인딩 포함 |
+| Hilt DI | ✅ 완료 | Interface-Implementation 바인딩 및 생성자 주입 최적화 |
 | Splash Screen | ✅ 완료 | core-splashscreen 적용 및 데이터 로딩 동기화 |
 | Seoul 문화행사 API | ✅ 완료 | SeoulRepository, SeoulApi 구현됨 |
 | ViewModel | ✅ 완료 | MainViewModel을 통한 UI 상태 관리 |
@@ -135,6 +150,7 @@
 
 ### 1순위 (기능 확장)
 - [ ] GoogleRepository 구현 (YouTube API 연동)
+- [x] SeoulApi 의존성 주입(DI) 적용
 - [ ] 상세 화면(Detail Screen) 구현 및 네비게이션 적용
 
 ### 2순위 (품질 개선)
