@@ -5,6 +5,45 @@
 
 ---
 
+## [2026-02-13] - Google/YouTube API 연동 구현 및 인증 체계 구축
+
+### 완료한 작업
+- **Google/YouTube API 연동 구현체 완성**:
+  - `GoogleRepositoryImpl`에 `getSubscriptions()`, `getPlaylist()`, `getContentDetail()` 실구현
+  - Data Layer 모델(`Subscription`, `Playlist`, `PlaylistItem`)에서 Domain 모델로의 매핑 함수 구성
+- **도메인 모델 신규 생성**:
+  - `Subscription`: YouTube 구독 정보 (채널 ID, 썸네일, 제목 등)
+  - `PlayList`: 재생목록 정보 (채널 ID, 제목, 로컬라이즈 등)
+  - `PlayItem`: 재생목록 아이템 정보 (영상 ID, 플레이리스트 ID 등)
+- **GoogleRepository 인터페이스 구체화**:
+  - 기존 placeholder(`test()`)를 실제 비즈니스 메서드 3개로 교체
+- **GoogleApi 엔드포인트 정의**:
+  - `/youtube/v3/subscriptions` - 구독 목록 조회
+  - `/youtube/v3/playlists` - 재생목록 조회
+  - `/youtube/v3/playlistItems` - 재생목록 아이템 상세 조회
+- **Google OAuth 인증 체계 구축**:
+  - `GoogleAuthInterceptor` (OkHttp Interceptor) 생성 - Bearer 토큰 자동 첨부
+  - `Preference` 클래스에 DataStore 기반 액세스 토큰 관리 (저장/조회/삭제) 구현
+- **DI 아키텍처 개선**:
+  - `DataModule`의 Retrofit 생성 방식을 `Retrofit.Builder` 패턴으로 리팩토링
+  - Google API 전용 OkHttpClient에 `GoogleAuthInterceptor` 주입
+- **의존성 추가**:
+  - `androidx.datastore:datastore-preferences:1.1.0` 추가
+
+### 변경된 파일
+- `data/src/main/java/app/peter/mos/data/repositories/GoogleRepositoryImpl.kt` (전면 구현)
+- `data/src/main/java/app/peter/mos/data/source/remote/GoogleApi.kt` (엔드포인트 정의)
+- `data/src/main/java/app/peter/mos/data/di/DataModule.kt` (Retrofit Builder 패턴, Interceptor 주입)
+- `data/src/main/java/app/peter/mos/data/tool/network/GoogleAuthInterceptor.kt` **(신규)**
+- `data/src/main/java/app/peter/mos/data/tool/preference/Preference.kt` (DataStore 구현)
+- `domain/src/main/java/app/peter/mos/domain/model/PlayItem.kt` **(신규)**
+- `domain/src/main/java/app/peter/mos/domain/model/PlayList.kt` **(신규)**
+- `domain/src/main/java/app/peter/mos/domain/model/Subscription.kt` **(신규)**
+- `domain/src/main/java/app/peter/mos/domain/repository/GoogleRepository.kt` (인터페이스 구체화)
+- `data/build.gradle.kts`, `gradle/libs.versions.toml` (DataStore 의존성)
+
+---
+
 ## [2026-02-06] - 로컬 캐싱(Room) 도입 및 네트워크 스택 최적화
 
 ### 완료한 작업
@@ -109,7 +148,7 @@
 
 # 📌 빠른 참조
 
-## 현재 프로젝트 상태 (2026-02-06 기준)
+## 현재 프로젝트 상태 (2026-02-13 기준)
 
 ### ✅ 완료된 기능
 | 기능 | 상태 | 설명 |
@@ -119,14 +158,16 @@
 | Hilt DI | ✅ 완료 | Interface-Implementation 바인딩 및 생성자 주입 최적화 |
 | Splash Screen | ✅ 완료 | core-splashscreen 적용 및 데이터 로딩 동기화 |
 | Seoul 문화행사 API | ✅ 완료 | SeoulRepository, SeoulApi 구현됨 |
+| Google/YouTube API | ✅ 완료 | GoogleRepository 실구현, 구독/재생목록/아이템 조회 |
+| Google OAuth 인증 | ✅ 완료 | GoogleAuthInterceptor + DataStore 기반 토큰 관리 |
 | ViewModel | ✅ 완료 | MainViewModel을 통한 UI 상태 관리 |
 | MainScreen UI | ✅ 완료 | 문화행사 목록 표시 및 상태 표시 |
 
 ### ⏳ 미구현 (Placeholder)
 | 항목 | 파일 위치 | 비고 |
 |------|-----------|------|
-| GoogleRepository | `data/.../repositories/GoogleRepository.kt` | 빈 클래스 |
 | Translator | `domain/.../tool/Translator.kt` | (파일 없음) 목적 정의 필요 |
+| Google UseCase | `domain/.../usecase/` | Google 데이터 활용 UseCase 미구현 |
 
 ---
 
@@ -137,7 +178,9 @@
 - **Hilt**: 2.48
 - **splashscreen**: 1.0.1
 - **Ktor**: 2.3.2
-- **Gson**: 2.10.1
+- **Retrofit**: OkHttp + Gson Converter (Google API 용)
+- **DataStore**: Preferences 1.1.0 (토큰 관리)
+- **Room**: 2.7.0 (로컬 캐싱)
 
 ---
 
@@ -149,12 +192,14 @@
        │
        ▼
 ┌─────────────┐
-│    data     │ ← SeoulRepositoryImpl, SeoulApi, Network
+│    data     │ ← SeoulRepositoryImpl, GoogleRepositoryImpl, SeoulApi, GoogleApi
+│             │   GoogleAuthInterceptor, Preference (DataStore), Network
 └──────┬──────┘
        │
        ▼
 ┌─────────────┐
-│   domain    │ ← SeoulUseCase, SeoulRepository (Interface), CulturalEvent
+│   domain    │ ← SeoulUseCase, SeoulRepository, GoogleRepository (Interface)
+│             │   CulturalEvent, Subscription, PlayList, PlayItem
 └─────────────┘
 ```
 
@@ -169,4 +214,4 @@
 
 ---
 
-*마지막 업데이트: 2026-02-06*
+*마지막 업데이트: 2026-02-13*

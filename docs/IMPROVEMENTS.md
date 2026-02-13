@@ -1,9 +1,29 @@
 # 프로젝트 개선 사항 및 기술 부채
 
-**최종 업데이트**: 2026-02-06  
+**최종 업데이트**: 2026-02-13  
 **작업자**: AI Assistant
 
-## 최근 개선 완료 항목 (2026-02-03 ~ 2026-02-06) ✅
+## 최근 개선 완료 항목 (2026-02-13) ✅
+
+### 7. Google/YouTube API 연동 구현체 완성
+- **변경 사항**: `GoogleRepositoryImpl`에서 YouTube Data API v3와 연동하여 구독 목록, 재생목록, 아이템 상세 조회 기능을 구현. 기존 placeholder(`test()`)를 실제 비즈니스 메서드로 교체.
+- **이유**: 문화행사 관련 YouTube 영상 정보를 제공하기 위한 핵심 데이터 소스 구축.
+
+### 8. Google OAuth 인증 체계 구축
+- **변경 사항**: `GoogleAuthInterceptor` (OkHttp Interceptor)를 통해 API 요청에 Bearer 토큰을 자동 첨부. `Preference` 클래스에 DataStore Preferences 기반 토큰 영속 관리 구현.
+- **이유**: Google API 호출 시 인증을 투명하게 처리하여 Repository 코드의 단순성 유지. DataStore를 통해 SharedPreferences보다 안전한 비동기 데이터 저장 제공.
+
+### 9. 도메인 모델 확장
+- **변경 사항**: `Subscription`, `PlayList`, `PlayItem` 도메인 모델 신규 생성. Data → Domain 매핑 함수 구현.
+- **이유**: Clean Architecture 원칙에 따라 Data Layer의 DTO와 분리된 순수 도메인 모델을 통해 비즈니스 로직의 독립성 보장.
+
+### 10. DI 아키텍처 고도화
+- **변경 사항**: Retrofit 생성을 `Retrofit.Builder` 패턴으로 리팩토링하여 여러 API별 커스텀 설정 가능. Google API 전용 OkHttpClient에 인터셉터 주입.
+- **이유**: 서로 다른 base URL과 인증 방식을 가진 API들을 유연하게 지원하기 위함.
+
+---
+
+## 이전 개선 완료 항목 (2026-02-03 ~ 2026-02-06) ✅
 
 ### 1. 모듈 구조 최적화 (Consolidation)
 - **변경 사항**: `presentation` 모듈을 `app` 모듈로 통합하여 3개 모듈 구조로 개편.

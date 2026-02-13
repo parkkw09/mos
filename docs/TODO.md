@@ -11,8 +11,13 @@
   - 문화행사 클릭 시 상세 정보(지도, 연락처, 상세 설명 등) 표시
 - [ ] **Navigation 적용**
   - Jetpack Navigation Compose를 도입하여 화면 전환 및 백스택 관리
-- [ ] **Google/YouTube API 연동**
-  - `GoogleRepository` 실구현을 통해 해당 문화행사 관련 영상 정보 제공
+- [x] ~~**Google/YouTube API 연동**~~ ✅ (2026-02-13 완료)
+  - `GoogleRepositoryImpl` 구현 완료 (구독, 재생목록, 아이템 조회)
+  - `GoogleAuthInterceptor` + DataStore 기반 OAuth 토큰 관리 구축
+- [ ] **Google UseCase 구현**
+  - `GoogleRepository`를 활용하는 UseCase 작성 및 ViewModel 연동
+- [ ] **Google OAuth 로그인 화면 구현**
+  - 사용자 로그인 플로우를 통한 액세스 토큰 획득 및 저장
 
 ### 🟡 2순위: 사용자 코드 품질 및 안정성 (Medium Priority)
 - [ ] **단위 테스트 (Unit Test) 작성**
@@ -46,5 +51,5 @@
 
 ---
 
-*마지막 업데이트: 2026-02-06*
+*마지막 업데이트: 2026-02-13*
 *관련 문서: [CHANGELOG.md](./CHANGELOG.md), [IMPROVEMENTS.md](./IMPROVEMENTS.md)*

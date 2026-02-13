@@ -1,6 +1,6 @@
 # 🏗️ MOS Project Architecture Documentation
 
-**최종 업데이트**: 2026-02-06
+**최종 업데이트**: 2026-02-13
 
 ---
 
@@ -43,8 +43,14 @@ graph TD
 ### 2. 🧠 Domain Module (`:domain`)
 앱의 비즈니스 로직을 포함하며, 어떠한 안드로이드 의존성도 가지지 않습니다.
 
-*   **Model**: `CulturalEvent` (Data Layer의 DTO와 분리된 순수 모델)
-*   **Repository Interface**: `SeoulRepository` (Data Layer에서 구현할 규약 정의)
+*   **Models**:
+    *   `CulturalEvent` (Data Layer의 DTO와 분리된 순수 모델)
+    *   `Subscription` (YouTube 구독 정보)
+    *   `PlayList` (YouTube 재생목록 정보)
+    *   `PlayItem` (YouTube 재생목록 아이템 정보)
+*   **Repository Interfaces**:
+    *   `SeoulRepository` (서울 문화행사 API 규약)
+    *   `GoogleRepository` (Google/YouTube API 규약 — `getSubscriptions`, `getPlaylist`, `getContentDetail`)
 *   **UseCase**: `SeoulUseCase`
     *   `SeoulRepository`를 주입받아 데이터 요청
     *   `withContext(Dispatchers.IO)`를 사용하여 **Worker Thread**에서 안전하게 실행 보장
@@ -54,15 +60,22 @@ graph TD
 
 *   **Repository Implementation**: 
     *   `SeoulRepositoryImpl`: `SeoulRepository` 인터페이스 구현, `SeoulApi` 사용
-    *   `GoogleRepository`: (Placeholder) Google/YouTube API 연동 예정, 현재 빈 클래스
+    *   `GoogleRepositoryImpl`: `GoogleRepository` 인터페이스 구현, `GoogleApi` 사용
+        *   Data → Domain 모델 매핑 함수 포함 (`toDomain()`)
 *   **Data Sources**:
-    *   **Remote**: `SeoulApi` (Ktor + Kotlinx Serialization)
-    *   **Local**: `Room Database` (AppDatabase)
-        *   `CulturalEventDao`, `CulturalEventEntity`를 통한 로컬 캐싱 구현
-    *   **DI Modules**: 
-        *   `DataModule`: Network 및 Repository 바인딩
-        *   `DatabaseModule`: Room DB 및 DAO 제공
-        *   `AppModule`: API 키 등 Android Context 기반 의존성 제공
+    *   **Remote**:
+        *   `SeoulApi` (Ktor + Kotlinx Serialization) — 서울 문화행사 API
+        *   `GoogleApi` (Retrofit + Gson) — YouTube Data API v3
+            *   구독 목록, 재생목록, 재생목록 아이템 엔드포인트
+    *   **Local**:
+        *   `Room Database` (AppDatabase) — `CulturalEventDao`, `CulturalEventEntity`를 통한 로컬 캐싱
+        *   `Preference` (DataStore Preferences) — Google 액세스 토큰 영속 관리
+*   **Network / Auth**:
+    *   `GoogleAuthInterceptor` (OkHttp Interceptor): DataStore에서 액세스 토큰을 읽어 Bearer 헤더 자동 첨부
+*   **DI Modules**: 
+    *   `DataModule` / `NetworkModule`: Network 클라이언트, Retrofit Builder, Repository 바인딩
+    *   `DatabaseModule`: Room DB 및 DAO 제공
+    *   `AppModule`: API 키 등 Android Context 기반 의존성 제공
 
 ---
 

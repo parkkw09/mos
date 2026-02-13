@@ -1,6 +1,6 @@
 # 프로젝트 모듈화 보고서
 
-**최종 수정일**: 2026-02-02  
+**최종 수정일**: 2026-02-13  
 **작업 유형**: 모듈 구조 간소화
 
 ---
@@ -47,7 +47,9 @@ mos/
 - **역할**: 비즈니스 로직 (Android 의존성 없음)
 - **주요 파일**:
   - `model/CulturalEvent.kt`
+  - `model/Subscription.kt`, `model/PlayList.kt`, `model/PlayItem.kt`
   - `repository/SeoulRepository.kt` (Interface)
+  - `repository/GoogleRepository.kt` (Interface)
   - `usecase/SeoulUseCase.kt`
 - **의존성**: 없음 (순수 Kotlin)
 - **특징**: Coroutines, Javax Inject
@@ -55,12 +57,15 @@ mos/
 #### 3. **data 모듈** (Android Library)
 - **역할**: 데이터 소스 및 Repository 구현
 - **주요 파일**:
-  - `di/` (Hilt Modules)
-  - `repositories/SeoulRepositoryImpl.kt`
-  - `source/remote/SeoulApi.kt`
-  - `tool/network/Network.kt`
+  - `di/` (Hilt Modules: `DataModule`, `NetworkModule`, `DatabaseModule`, `AppModule`)
+  - `repositories/SeoulRepositoryImpl.kt`, `repositories/GoogleRepositoryImpl.kt`
+  - `source/remote/SeoulApi.kt`, `source/remote/GoogleApi.kt`
+  - `source/local/` (Room DAO, Entity)
+  - `tool/network/Network.kt`, `tool/network/GoogleAuthInterceptor.kt`
+  - `tool/preference/Preference.kt` (DataStore)
+  - `tool/db/AppDatabase.kt`
 - **의존성**: domain
-- **특징**: Ktor, Gson, Hilt
+- **특징**: Ktor, Retrofit, Gson, Room, DataStore, Hilt
 
 ---
 
