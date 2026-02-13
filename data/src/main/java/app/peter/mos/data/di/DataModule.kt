@@ -7,6 +7,7 @@ import app.peter.mos.data.repositories.SeoulRepositoryImpl
 import app.peter.mos.data.source.local.dao.CulturalEventDao
 import app.peter.mos.data.source.remote.GoogleApi
 import app.peter.mos.data.tool.db.AppDatabase
+import app.peter.mos.data.tool.network.GoogleAuthInterceptor
 import app.peter.mos.data.tool.network.Network
 import app.peter.mos.domain.repository.GoogleRepository
 import app.peter.mos.domain.repository.SeoulRepository
@@ -41,19 +42,26 @@ object NetworkModule {
     }
 
     @Provides
-    @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofitBuilder(okHttpClient: OkHttpClient): Retrofit.Builder {
         return Retrofit.Builder()
-                .baseUrl("https://www.googleapis.com/") // Provisional base URL
                 .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
-                .build()
     }
 
     @Provides
     @Singleton
-    fun provideGoogleApi(retrofit: Retrofit): GoogleApi {
-        return retrofit.create(GoogleApi::class.java)
+    fun provideGoogleApi(
+            retrofitBuilder: Retrofit.Builder,
+            okHttpClient: OkHttpClient,
+            googleAuthInterceptor: GoogleAuthInterceptor
+    ): GoogleApi {
+        val client = okHttpClient.newBuilder().addInterceptor(googleAuthInterceptor).build()
+
+        return retrofitBuilder
+                .client(client)
+                .baseUrl("https://www.googleapis.com/")
+                .build()
+                .create(GoogleApi::class.java)
     }
 }
 

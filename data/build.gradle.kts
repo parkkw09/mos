@@ -18,8 +18,8 @@ android {
         getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                file("proguard-rules.pro")
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    file("proguard-rules.pro")
             )
         }
     }
@@ -29,9 +29,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    testOptions {
-        unitTests.isIncludeAndroidResources = false
-    }
+    testOptions { unitTests.isIncludeAndroidResources = false }
 }
 
 dependencies {
@@ -71,6 +69,9 @@ dependencies {
     implementation(libs.roomRuntime)
     implementation(libs.roomKtx)
     ksp(libs.roomCompiler)
+
+    // DataStore
+    implementation(libs.datastorePreferences)
 
     // Test
     testImplementation(libs.junit)
