@@ -36,6 +36,7 @@ graph TD
     *   `MainViewModel`의 데이터 로딩(`isReady`) 상태를 감지하여 스플래시 유지/해제 제어
 
 #### 주요 컴포넌트
+*   `MosApplication`: HiltApplication 진입점 및 전역 설정 담당
 *   `MainActivity`: 앱 진입점, 스플래시 처리, DI 컨테이너 역할
 *   `MainViewModel`: `SeoulUseCase`를 주입받아 비즈니스 로직 수행, UI 상태(`events`, `loadState`) 노출
 *   `MainScreen`: `ViewModel`의 상태를 구독하여 화면 렌더링 (Stateless Composable 지향)
