@@ -1,8 +1,8 @@
 package app.peter.mos.domain.repository
 
-import app.peter.mos.domain.model.PlayItem
-import app.peter.mos.domain.model.PlayList
-import app.peter.mos.domain.model.Subscription
+import app.peter.mos.domain.model.google.PlayItem
+import app.peter.mos.domain.model.google.PlayList
+import app.peter.mos.domain.model.google.Subscription
 
 interface GoogleRepository {
     suspend fun getSubscriptions(): List<Subscription>

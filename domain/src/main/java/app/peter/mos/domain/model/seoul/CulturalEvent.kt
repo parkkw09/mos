@@ -1,4 +1,4 @@
-package app.peter.mos.domain.model
+package app.peter.mos.domain.model.seoul
 
 data class CulturalEvent(
         val title: String,

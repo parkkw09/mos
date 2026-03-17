@@ -2,7 +2,7 @@ package app.peter.mos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.peter.mos.domain.model.CulturalEvent
+import app.peter.mos.domain.model.seoul.CulturalEvent
 import app.peter.mos.domain.usecase.SeoulUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

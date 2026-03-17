@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore by preferencesDataStore(name = "mos_preferences")
 
 @Singleton
-class Preference @Inject constructor(@ApplicationContext private val context: Context) {
+class Preference @Inject constructor(@param:ApplicationContext private val context: Context) {
     companion object {
         private val KEY_GOOGLE_ACCESS_TOKEN = stringPreferencesKey("google_access_token")
     }

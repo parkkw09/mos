@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.peter.mos.MainViewModel
-import app.peter.mos.domain.model.CulturalEvent
+import app.peter.mos.domain.model.seoul.CulturalEvent
 
 @Composable
 fun MainScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {

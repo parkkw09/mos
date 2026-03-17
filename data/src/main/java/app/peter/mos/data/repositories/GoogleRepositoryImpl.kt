@@ -4,9 +4,9 @@ import app.peter.mos.data.source.model.google.youtube.Playlist
 import app.peter.mos.data.source.model.google.youtube.PlaylistItem
 import app.peter.mos.data.source.model.google.youtube.Subscription as DataSubscription
 import app.peter.mos.data.source.remote.GoogleApi
-import app.peter.mos.domain.model.PlayItem
-import app.peter.mos.domain.model.PlayList
-import app.peter.mos.domain.model.Subscription
+import app.peter.mos.domain.model.google.PlayItem
+import app.peter.mos.domain.model.google.PlayList
+import app.peter.mos.domain.model.google.Subscription
 import app.peter.mos.domain.repository.GoogleRepository
 import javax.inject.Inject
 
