@@ -48,11 +48,29 @@ constructor(
                                 remoteData.list.map {
                                     CulturalEventEntity(
                                             title = it.title,
+                                            codeName = it.codeName,
+                                            guName = it.guName,
                                             date = it.date,
                                             place = it.place,
-                                            mainImage = it.mainImage,
                                             orgName = it.orgName,
-                                            useFee = it.useFee
+                                            useTarget = it.useTarget,
+                                            useFee = it.useFee,
+                                            inquiry = it.inquiry,
+                                            player = it.player,
+                                            program = it.program,
+                                            etcDesc = it.etcDesc,
+                                            orgLink = it.orgLink,
+                                            mainImage = it.mainImage,
+                                            registrationDate = it.registrationDate,
+                                            ticket = it.ticket,
+                                            startDate = it.startDate,
+                                            endDate = it.endDate,
+                                            themeCode = it.themeCode,
+                                            lot = it.lot,
+                                            lat = it.lat,
+                                            isFree = it.isFree,
+                                            homepageAddr = it.homepageAddr,
+                                            proTime = it.proTime
                                     )
                                 }
 
@@ -79,10 +97,28 @@ constructor(
     private fun CulturalEventEntity.toDomain() =
             CulturalEvent(
                     title = title,
+                    codeName = codeName,
+                    guName = guName,
                     date = date,
                     place = place,
-                    mainImage = mainImage,
                     orgName = orgName,
-                    useFee = useFee
+                    useTarget = useTarget,
+                    useFee = useFee,
+                    inquiry = inquiry,
+                    player = player,
+                    program = program,
+                    etcDesc = etcDesc,
+                    orgLink = orgLink,
+                    mainImage = mainImage,
+                    registrationDate = registrationDate,
+                    ticket = ticket,
+                    startDate = startDate,
+                    endDate = endDate,
+                    themeCode = themeCode,
+                    lot = lot,
+                    lat = lat,
+                    isFree = isFree,
+                    homepageAddr = homepageAddr,
+                    proTime = proTime
             )
 }
