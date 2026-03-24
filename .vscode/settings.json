@@ -1,0 +1,19 @@
+{
+    "kotlin.languageServer.enabled": true,
+    "kotlin.languageServer.path": "",
+    "kotlin.compiler.jvm.target": "17",
+    "kotlin.debugAdapter.enabled": true,
+    "kotlin.completion.snippets.enabled": true,
+    "kotlin.diagnostics.debounceTime": 250,
+    "kotlin.externalSources.useKlsScheme": true,
+    "kotlin.externalSources.autoConvertToKotlin": true,
+    "kotlin.indexing.enabled": true,
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "java.import.gradle.java.home": "",
+    "files.associations": {
+        "*.kt": "kotlin",
+        "*.kts": "kotlin"
+    }
+}
