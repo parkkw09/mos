@@ -4,13 +4,17 @@ import app.peter.mos.data.source.model.google.youtube.Playlist
 import app.peter.mos.data.source.model.google.youtube.PlaylistItem
 import app.peter.mos.data.source.model.google.youtube.Subscription as DataSubscription
 import app.peter.mos.data.source.remote.GoogleApi
+import app.peter.mos.data.tool.preference.Preference
 import app.peter.mos.domain.model.google.PlayItem
 import app.peter.mos.domain.model.google.PlayList
 import app.peter.mos.domain.model.google.Subscription
 import app.peter.mos.domain.repository.GoogleRepository
 import javax.inject.Inject
 
-class GoogleRepositoryImpl @Inject constructor(private val api: GoogleApi) : GoogleRepository {
+class GoogleRepositoryImpl @Inject constructor(
+    private val api: GoogleApi,
+    private val preference: Preference
+) : GoogleRepository {
 
     override suspend fun getSubscriptions(): List<Subscription> {
         val response = api.getSubscriptionList()
@@ -31,6 +35,10 @@ class GoogleRepositoryImpl @Inject constructor(private val api: GoogleApi) : Goo
                         )
         return item.toDomain()
     }
+
+    override suspend fun saveAccessToken(token: String) = preference.saveGoogleAccessToken(token)
+
+    override suspend fun clearAccessToken() = preference.clearGoogleAccessToken()
 
     // ── Mapping: Data → Domain ──────────────────────────────────────────
 

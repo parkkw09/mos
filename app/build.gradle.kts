@@ -85,6 +85,12 @@ dependencies {
     implementation(libs.composeUiToolingPreview)
     implementation(libs.material3)
 
+    // Google Auth (Credential Manager + Authorization)
+    implementation(libs.credentials)
+    implementation(libs.credentialsPlayServicesAuth)
+    implementation(libs.googleid)
+    implementation(libs.playServicesAuth)
+
     // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidxTestExtJunit)

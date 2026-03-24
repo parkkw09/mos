@@ -27,8 +27,8 @@ data class PlaylistItemThumbnails(
     @SerializedName("default") val default: DetailThumbnailsInfo,
     @SerializedName("medium") val medium: DetailThumbnailsInfo,
     @SerializedName("high") val high: DetailThumbnailsInfo,
-    @SerializedName("standard") val standard: DetailThumbnailsInfo,
-    @SerializedName("maxres") val maxres: DetailThumbnailsInfo
+    @SerializedName("standard") val standard: DetailThumbnailsInfo?,
+    @SerializedName("maxres") val maxres: DetailThumbnailsInfo?
 )
 
 data class PlaylistItemResourceIdentity(

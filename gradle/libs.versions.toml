@@ -19,6 +19,9 @@ junit = "4.13.2"
 androidx-test-ext-junit = "1.2.1"
 espresso-core = "3.6.1"
 datastore = "1.1.0"
+credentials = "1.5.0"
+googleid = "1.1.1"
+playServicesAuth = "21.3.0"
 
 [libraries]
 # Kotlin
@@ -85,6 +88,12 @@ javaxInject = { group = "javax.inject", name = "javax.inject", version = "1" }
 
 # DataStore
 datastorePreferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+
+# Google Auth
+credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+credentialsPlayServicesAuth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+playServicesAuth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version = "9.0.0" }

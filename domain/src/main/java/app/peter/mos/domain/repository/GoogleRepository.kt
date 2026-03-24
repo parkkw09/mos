@@ -8,4 +8,6 @@ interface GoogleRepository {
     suspend fun getSubscriptions(): List<Subscription>
     suspend fun getPlaylist(channelId: String): List<PlayList>
     suspend fun getContentDetail(itemId: String): PlayItem
+    suspend fun saveAccessToken(token: String)
+    suspend fun clearAccessToken()
 }
