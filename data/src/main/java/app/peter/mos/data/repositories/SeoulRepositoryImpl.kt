@@ -6,6 +6,7 @@ import app.peter.mos.data.source.local.entity.CulturalEventEntity
 import app.peter.mos.data.source.model.seoul.cultural.CulturalEventInfo
 import app.peter.mos.data.source.remote.SeoulApi
 import app.peter.mos.domain.model.seoul.CulturalEvent
+import app.peter.mos.domain.model.seoul.CulturalEventPage
 import app.peter.mos.domain.repository.SeoulRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -19,76 +20,64 @@ constructor(
         @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : SeoulRepository {
 
-    // Condition 1: Check if this session has fetched remote data at least once
-    private var isSessionCacheValid = false
-
-    suspend fun getCulturalEventFromRemote(
-            pageStart: Int = 1,
-            pageEnd: Int = 5
-    ): CulturalEventInfo {
-        return api.getCulturalEvent(pageStart, pageEnd).info
+    private suspend fun fetchFromRemote(start: Int, end: Int): CulturalEventInfo {
+        return api.getCulturalEvent(start, end).info
     }
 
-    override suspend fun getCulturalEvents(forceRefresh: Boolean): List<CulturalEvent> =
+    override suspend fun getCulturalEvents(start: Int, end: Int): CulturalEventPage =
             withContext(ioDispatcher) {
-                val localData = culturalEventDao.getAll()
+                try {
+                    val remoteInfo = fetchFromRemote(start, end)
+                    val entities =
+                            remoteInfo.list.map {
+                                CulturalEventEntity(
+                                        title = it.title,
+                                        codeName = it.codeName,
+                                        guName = it.guName,
+                                        date = it.date,
+                                        place = it.place,
+                                        orgName = it.orgName,
+                                        useTarget = it.useTarget,
+                                        useFee = it.useFee,
+                                        inquiry = it.inquiry,
+                                        player = it.player,
+                                        program = it.program,
+                                        etcDesc = it.etcDesc,
+                                        orgLink = it.orgLink,
+                                        mainImage = it.mainImage,
+                                        registrationDate = it.registrationDate,
+                                        ticket = it.ticket,
+                                        startDate = it.startDate,
+                                        endDate = it.endDate,
+                                        themeCode = it.themeCode,
+                                        lot = it.lot,
+                                        lat = it.lat,
+                                        isFree = it.isFree,
+                                        homepageAddr = it.homepageAddr,
+                                        proTime = it.proTime
+                                )
+                            }
 
-                // Logical combination of the conditions:
-                // Condition 2: localData.isEmpty()
-                // Condition 1: !isSessionCacheValid
-                // Condition 3 & 4: forceRefresh
-                val shouldFetchRemote = forceRefresh || localData.isEmpty() || !isSessionCacheValid
+                    if (start == 1) culturalEventDao.deleteAll()
+                    culturalEventDao.insertAll(entities)
 
-                return@withContext if (!shouldFetchRemote) {
-                    localData.map { it.toDomain() }
-                } else {
-                    try {
-                        val remoteData = getCulturalEventFromRemote(pageEnd = 100)
-                        val entities =
-                                remoteData.list.map {
-                                    CulturalEventEntity(
-                                            title = it.title,
-                                            codeName = it.codeName,
-                                            guName = it.guName,
-                                            date = it.date,
-                                            place = it.place,
-                                            orgName = it.orgName,
-                                            useTarget = it.useTarget,
-                                            useFee = it.useFee,
-                                            inquiry = it.inquiry,
-                                            player = it.player,
-                                            program = it.program,
-                                            etcDesc = it.etcDesc,
-                                            orgLink = it.orgLink,
-                                            mainImage = it.mainImage,
-                                            registrationDate = it.registrationDate,
-                                            ticket = it.ticket,
-                                            startDate = it.startDate,
-                                            endDate = it.endDate,
-                                            themeCode = it.themeCode,
-                                            lot = it.lot,
-                                            lat = it.lat,
-                                            isFree = it.isFree,
-                                            homepageAddr = it.homepageAddr,
-                                            proTime = it.proTime
-                                    )
-                                }
-
-                        // Update local storage
-                        culturalEventDao.deleteAll()
-                        culturalEventDao.insertAll(entities)
-
-                        // Set session flag to true after successful remote fetch (Condition 1)
-                        isSessionCacheValid = true
-
-                        entities.map { it.toDomain() }
-                    } catch (e: Exception) {
-                        // Return local data as fallback if remote fails
+                    CulturalEventPage(
+                            events = entities.map { it.toDomain() },
+                            totalCount = remoteInfo.count
+                    )
+                } catch (e: Exception) {
+                    if (start == 1) {
+                        val localData = culturalEventDao.getAll()
                         if (localData.isNotEmpty()) {
-                            localData.map { it.toDomain() }
+                            CulturalEventPage(
+                                    events = localData.map { it.toDomain() },
+                                    totalCount = localData.size
+                            )
                         } else {
                             throw e
                         }
+                    } else {
+                        throw e
                     }
                 }
             }
