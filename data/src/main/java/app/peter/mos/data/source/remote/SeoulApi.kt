@@ -9,11 +9,11 @@ import javax.inject.Named
 
 class SeoulApi
 @Inject
-constructor(private val client: HttpClient, @Named("seoul_key") private val key: String) {
+constructor(private val client: HttpClient, @param:Named("seoul_key") private val key: String) {
 
     private val baseUrl = "http://openapi.seoul.go.kr:8088"
 
-    suspend fun getCulturalEvent(pageStart: Int = 1, pageEnd: Int = 5): CulturalEventInfoResponse {
-        return client.get("${baseUrl}/${key}/json/culturalEventInfo/${pageStart}/${pageEnd}").body()
+    suspend fun getCulturalEvent(start: Int, end: Int): CulturalEventInfoResponse {
+        return client.get("${baseUrl}/${key}/json/culturalEventInfo/${start}/${end}").body()
     }
 }

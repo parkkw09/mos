@@ -32,6 +32,7 @@ object Network {
                             isLenient = true
                             encodeDefaults = true
                             prettyPrint = true
+                            coerceInputValues = true
                         }
                 )
             }
