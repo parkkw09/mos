@@ -1,6 +1,6 @@
 # 🏗️ MOS Project Architecture Documentation
 
-**최종 업데이트**: 2026-03-17
+**최종 업데이트**: 2026-03-31
 
 ---
 
@@ -52,25 +52,71 @@ graph TD
 *   `onBackPressedDispatcher.addCallback`를 등록하여 뒤로가기 액션 시 `finish()` 호출.
 *   `setContent` 내부에서 `MosTheme`과 `Surface`를 씌워 `MainScreen`을 렌더링합니다.
 *   `onStart`, `onResume`, `onPause`, `onDestroy` 각 라이프사이클 콜백에서 `MosApplication.TAG`를 통한 Logcat 로그를 출력합니다.
+*   `GoogleSignInManager`를 생성하고 `register()`를 호출하여 OAuth 결과 수신 준비.
+*   `onCreate()` 시 `startGoogleSignIn()`을 즉시 호출하여 앱 시작 시 Google 인증을 자동 시도합니다.
+*   `observeGoogleAuthState()`로 인증 결과(성공/실패)를 Toast로 표시합니다.
 
-**3) `MainViewModel` (상태 관리)**
-*   `@HiltViewModel` 주입, `SeoulUseCase`를 의존성으로 받습니다.
-*   내부 속성 (전부 `MutableStateFlow`로 관리, `asStateFlow()`로 외부 노출):
+**3) `GoogleSignInManager` (Google OAuth 처리)**
+*   `ComponentActivity`를 생성자로 받으며, Hilt 주입 없이 Activity 수명주기 내에서 직접 생성합니다.
+*   `register()`: `ActivityResultLauncher<IntentSenderRequest>`를 등록하여 OAuth 결과를 수신합니다.
+*   `suspend fun signIn(): String`: `Google Identity SDK`의 `authorize()` API를 `suspendCancellableCoroutine`으로 래핑하여 코루틴 친화적으로 사용합니다.
+    *   즉시 토큰이 있는 경우(재인증 불필요): 바로 resume
+    *   `hasResolution() == true`인 경우: `IntentSenderRequest` 실행 후 Launcher 결과에서 토큰 추출
+    *   토큰 없음 / 실패: `resumeWithException`으로 예외 전파
+*   YouTube 읽기 전용 Scope(`youtube.readonly`)만 요청합니다.
+
+**4) `LoadState` (UI 로딩 상태 모델)**
+Sealed interface로 화면의 모든 데이터 로딩 상태를 표현합니다.
+```kotlin
+sealed interface LoadState {
+    data object Idle        : LoadState
+    data object Loading     : LoadState  // 첫 페이지 로딩
+    data object LoadingMore : LoadState  // 추가 페이지 로딩 (무한스크롤)
+    data object Success     : LoadState
+    data class  Error(val message: String) : LoadState
+}
+```
+
+**5) `GoogleAuthState` (Google 인증 상태 모델)**
+Sealed interface로 Google OAuth 흐름의 모든 상태를 표현합니다.
+```kotlin
+sealed interface GoogleAuthState {
+    data object Unauthenticated : GoogleAuthState
+    data object Authenticating  : GoogleAuthState
+    data object Authenticated   : GoogleAuthState
+    data class  Error(val message: String) : GoogleAuthState
+}
+```
+
+**6) `MainViewModel` (상태 관리)**
+*   `@HiltViewModel` 주입, `SeoulUseCase`, `SaveGoogleTokenUseCase`, `ClearGoogleTokenUseCase`를 의존성으로 받습니다.
+*   **StateFlow 목록** (전부 `MutableStateFlow`로 관리, `asStateFlow()`로 외부 노출):
     *   `_isReady` / `isReady` (Boolean): 스플래시 완료 여부 판단용 (초기값 `false`).
-    *   `_events` / `events` (`List<CulturalEvent>`): 최종적으로 화면에 뿌려질 이벤트 데이터 (초기값 `emptyList()`).
-    *   `_loadState` / `loadState` (String): UI 메시지 상태 (초기값 `"Loading"`).
-*   `initialize()` 메서드 로직:
-    *   `_isReady.value == true`인 경우 즉시 반환 (중복 호출 방지).
-    *   `viewModelScope.launch` 내에서 데이터(`seoulUseCase()`) 요청 수행.
-    *   정상 응답 시 `_events`에 데이터를 채우고 상태를 `"Complete"`로 변경.
-    *   try-catch로 통신 에러 발생 시 `e.localizedMessage ?: "Error"` 값으로 상태 변경.
-    *   성공/실패 여부에 상관없이 `finally` 블록에서 `_isReady.value = true`로 만들어 스플래시를 종료.
+    *   `_events` / `events` (`List<CulturalEvent>`): 누적된 이벤트 목록 (초기값 `emptyList()`).
+    *   `_loadState` / `loadState` (`LoadState`): 로딩 상태 (초기값 `LoadState.Idle`).
+    *   `_googleAuthState` / `googleAuthState` (`GoogleAuthState`): Google 인증 상태 (초기값 `GoogleAuthState.Unauthenticated`).
+*   **페이지네이션 상태 관리** (내부 변수):
+    *   `totalCount`: API에서 반환된 전체 이벤트 수.
+    *   `nextStart`: 다음 요청 시작 인덱스 (초기값 1).
+    *   `isLoading`: 현재 요청 진행 여부 (중복 호출 방지).
+    *   `PAGE_SIZE = 50`: 한 번에 가져오는 페이지 크기.
+*   **주요 메서드**:
+    *   `initialize()`: `events`가 비어있고 로딩 중이 아닐 때만 `loadNextPage()`를 호출합니다.
+    *   `loadNextPage()`: 페이지 단위 로드. 첫 페이지면 `LoadState.Loading`, 이후 페이지면 `LoadState.LoadingMore`로 설정 후 데이터 요청.
+    *   `refresh()`: 모든 상태를 초기화하고 첫 페이지부터 다시 로드합니다.
+    *   `onGoogleSignInStarted()`: 인증 상태를 `Authenticating`으로 변경.
+    *   `onGoogleSignInSuccess(token)`: `SaveGoogleTokenUseCase`를 호출하여 DataStore에 저장 후 `Authenticated`로 변경.
+    *   `onGoogleSignInError(message)`: `Error` 상태로 변경.
+    *   `signOut()`: `ClearGoogleTokenUseCase` 호출 후 `Unauthenticated`로 변경.
 
-**4) `ui/MainScreen.kt` (UI 컴포넌트)**
+**7) `ui/MainScreen.kt` (UI 컴포넌트)**
 *   `MainScreen`: ViewModel을 파라미터로 받아 `events`와 `loadState`를 `collectAsState()`로 수집하고, `MainScreenContent`에 전달합니다.
-*   `MainScreenContent`: 실제 UI를 구성하는 Stateless 컴포저블. Preview 분리 가능한 구조.
-    *   `loadState == "Loading"` 인 경우 중앙에 `CircularProgressIndicator()` 표시.
-    *   그 외의 경우 `LazyColumn`으로 이벤트 리스트를 스크롤 가능한 형태로 표시 (제목 + 구분선).
+*   `MainScreenContent`: 실제 UI를 구성하는 Stateless 컴포저블.
+    *   `LoadState.Loading`: 전체 화면 중앙 `CircularProgressIndicator()` 표시.
+    *   `LoadState.Error`: 전체 화면 중앙 에러 메시지 텍스트 표시.
+    *   그 외(`Idle`, `Success`, `LoadingMore`): `LazyColumn`으로 이벤트 리스트 표시.
+        *   `rememberLazyListState` + `derivedStateOf`를 통해 리스트 하단 3개 항목 이내 진입 시 자동으로 `onLoadMore()` 호출 (무한스크롤).
+        *   `LoadState.LoadingMore`인 경우 리스트 하단에 추가 `CircularProgressIndicator` 표시.
 *   `@Preview` 어노테이션으로 `MainScreenPreview`가 제공되어 스튜디오 내 미리보기 가능.
 
 ---
@@ -81,19 +127,57 @@ graph TD
 #### 핵심 요소
 
 **1) Models** (순수 비즈니스 데이터 모델, DTO 아님)
-*   `CulturalEvent` (seoul): `title`, `date`, `place`, `mainImage`, `orgName`, `useFee` 필드를 가진 문화 행사 정보 모델.
+*   `CulturalEvent` (seoul): API 응답의 모든 필드를 포함하는 문화 행사 정보 모델 (24개 필드).
+
+    | 필드 | 설명 |
+    |---|---|
+    | `codeName` | 분류 |
+    | `guName` | 자치구 |
+    | `title` | 공연/행사명 |
+    | `date` | 날짜 |
+    | `place` | 장소 |
+    | `orgName` | 기관명 |
+    | `useTarget` | 이용대상 |
+    | `useFee` | 이용요금 |
+    | `inquiry` | 문의 |
+    | `player` | 출연자정보 |
+    | `program` | 프로그램소개 |
+    | `etcDesc` | 기타내용 |
+    | `orgLink` | 홈페이지 주소 |
+    | `mainImage` | 대표이미지 URL |
+    | `registrationDate` | 신청일 |
+    | `ticket` | 시민/기관 |
+    | `startDate` | 시작일 |
+    | `endDate` | 종료일 |
+    | `themeCode` | 테마분류 |
+    | `lot` | 경도(Y좌표) |
+    | `lat` | 위도(X좌표) |
+    | `isFree` | 유무료 |
+    | `homepageAddr` | 문화포털상세URL |
+    | `proTime` | 행사시간 |
+
+*   `CulturalEventPage` (seoul): 페이지네이션 응답 래퍼.
+    *   `events: List<CulturalEvent>`: 현재 페이지 이벤트 목록.
+    *   `totalCount: Int`: 서버의 전체 데이터 수.
 *   `Subscription` (google): 유튜브 채널 구독 정보.
 *   `PlayList` (google): 유튜브 재생목록 정보.
 *   `PlayItem` (google): 유튜브 재생목록 아이템 정보.
 
 **2) Repositories (Interfaces)**
-*   `SeoulRepository`: `suspend fun getCulturalEvents(forceRefresh: Boolean = false): List<CulturalEvent>` 규약 정의.
-*   `GoogleRepository`: `getSubscriptions()`, `getPlaylist(channelId)`, `getContentDetail(itemId)` 규약 정의.
+*   `SeoulRepository`: `suspend fun getCulturalEvents(start: Int, end: Int): CulturalEventPage` 규약 정의.
+*   `GoogleRepository`:
+    *   `getSubscriptions()`, `getPlaylist(channelId)`, `getContentDetail(itemId)` 데이터 조회 규약 정의.
+    *   `saveAccessToken(token)`, `clearAccessToken()` 토큰 영속 관리 규약 정의.
 
-**3) UseCase (`SeoulUseCase`)**
-*   `@Inject constructor`로 `SeoulRepository`를 주입받습니다.
-*   `suspend operator fun invoke()` 시 `repository.getCulturalEvents()`를 직접 호출합니다.
-*   ⚠️ **스레드 전환 책임은 Repository(Data 계층)에 위임됩니다.** UseCase 자체는 `withContext`를 포함하지 않습니다.
+**3) UseCases**
+*   `SeoulUseCase`: `invoke(start: Int, end: Int): CulturalEventPage` — Repository 위임.
+*   `GetSubscriptionsUseCase`: `invoke(): List<Subscription>`
+*   `GetPlaylistUseCase`: `invoke(channelId: String): List<PlayList>`
+*   `GetContentDetailUseCase`: `invoke(itemId: String): PlayItem`
+*   `SaveGoogleTokenUseCase`: `invoke(token: String)` — Access Token DataStore 저장.
+*   `ClearGoogleTokenUseCase`: `invoke()` — Access Token DataStore 삭제.
+
+> ⚠️ **스레드 전환 책임은 Repository(Data 계층)에 위임됩니다.** UseCase 자체는 `withContext`를 포함하지 않습니다.
 
 ---
 
@@ -111,7 +195,7 @@ graph TD
     *   `GoogleAuthInterceptor`를 별도 OkHttpClient에 추가하여 Google API 전용으로 사용.
 *   **Room Database (`AppDatabase`)**:
     *   버전 제어를 따르는 오프라인 데이터 로컬 캐싱 DB (`mos_database`).
-    *   Entity: `CulturalEventEntity` (`title`을 PrimaryKey로 사용, `createdAt` 타임스탬프 필드 포함).
+    *   Entity: `CulturalEventEntity` (`title`을 PrimaryKey로 사용, API 응답의 24개 필드 + `createdAt` 타임스탬프 포함).
     *   DAO: `CulturalEventDao` (`getAll`, `insertAll`, `deleteAll`).
 *   **DataStore Preferences (`Preference`)**:
     *   `@Singleton` / `@Inject constructor`로 Hilt 주입.
@@ -134,9 +218,10 @@ graph TD
 
 **1) Seoul API (Ktor / Kotlinx.Serialization)**
 *   Remote Client: `SeoulApi` 클래스 (`@Inject constructor`로 `HttpClient`와 API Key 주입).
-*   Endpoint: `http://openapi.seoul.go.kr:8088/{key}/json/culturalEventInfo/{pageStart}/{pageEnd}`
+*   Endpoint: `http://openapi.seoul.go.kr:8088/{key}/json/culturalEventInfo/{start}/{end}`
 *   보안: API KEY (`seoul_key`)는 외부 private properties 파일(`~/Documents/private/key/app_props.properties`)에서 빌드 시 `resValue`로 주입. `AppModule`에서 `@Named("seoul_key")` Qualifier로 제공.
-*   응답 파싱: `kotlinx.serialization` 기반 (`CulturalEventInfoResponse` → `CulturalEventInfo` → `CulturalEvent` 리스트).
+*   응답 파싱: `kotlinx.serialization` 기반 (`CulturalEventInfoResponse` → `CulturalEventInfo` → `CulturalEventInfoData` 리스트).
+    *   `CulturalEventInfo.count`: `list_total_count` (전체 데이터 수, 페이지네이션에 활용).
 
 **2) Google YouTube API (Retrofit / Gson)**
 *   Remote Client Interface: `GoogleApi` (`https://www.googleapis.com/` 기반).
@@ -149,28 +234,24 @@ graph TD
 
 #### Repository Implementations (`*Impl`)
 
-**`SeoulRepositoryImpl` (Cache-then-Network 전략)**
+**`SeoulRepositoryImpl` (Remote-First with Fallback 전략)**
 *   `@Inject constructor`로 `SeoulApi`, `CulturalEventDao`, `@IoDispatcher CoroutineDispatcher` 주입.
-*   `getCulturalEvents()` 전체를 `withContext(ioDispatcher)` 블록으로 래핑하여 IO 스레드에서 안전하게 실행.
-*   내부적으로 `isSessionCacheValid` Bool 플래그(메모리 수준)로 세션 당 원격 호출 여부 관리.
+*   `getCulturalEvents(start, end)` 전체를 `withContext(ioDispatcher)` 블록으로 래핑하여 IO 스레드에서 안전하게 실행.
+*   세션 캐시 플래그 방식을 제거하고, **항상 원격 API를 먼저 호출**하는 단순한 전략을 채택합니다.
 
-`getCulturalEvents(forceRefresh)` 동작 로직:
-1.  `localData = culturalEventDao.getAll()` 로컬 데이터 우선 조회.
-2.  `shouldFetchRemote = forceRefresh || localData.isEmpty() || !isSessionCacheValid` 조건 계산.
-3.  **False (캐시 사용)**: `localData`를 `toDomain()` 매핑 후 즉각 반환.
-4.  **True (원격 호출)**: `getCulturalEventFromRemote(pageEnd = 100)` 호출 (page=1~100):
-    *   응답을 `CulturalEventEntity` 리스트로 변환.
-    *   `deleteAll()` 후 `insertAll()`로 캐시 갱신.
-    *   `isSessionCacheValid = true` 세션 플래그 설정.
-    *   `entities.map { it.toDomain() }` 반환.
-5.  **에러 처리**: 통신 실패 시 `localData`가 있으면 Fallback 반환, 없으면 예외를 상위로 전파.
-6.  내부 헬퍼 `CulturalEventEntity.toDomain()`: Entity → Domain 모델 변환.
+`getCulturalEvents(start, end)` 동작 로직:
+1.  원격 API 호출: `fetchFromRemote(start, end)` 실행.
+2.  응답을 `CulturalEventEntity` 리스트로 변환.
+3.  `start == 1`인 경우(첫 페이지): `deleteAll()` 후 `insertAll()`로 로컬 캐시를 교체 갱신.
+4.  `start > 1`인 경우(이후 페이지): `insertAll()`로 캐시에 추가.
+5.  `CulturalEventPage(events, totalCount)` 반환.
+6.  **에러 처리 (Fallback)**: 통신 실패 시 `start == 1`에 한해 로컬 캐시 데이터로 Fallback 반환. 캐시도 없으면 예외를 상위로 전파.
 
 **`GoogleRepositoryImpl` (Mapping 전담)**
-*   `@Inject constructor`로 `GoogleApi` 주입.
-*   `GoogleRepository` 인터페이스의 3가지 메서드 구현.
+*   `@Inject constructor`로 `GoogleApi`, `Preference` 주입.
+*   `GoogleRepository` 인터페이스의 5가지 메서드 구현 (조회 3개 + 토큰 저장/삭제 2개).
 *   각 API 응답 DTO(`DataSubscription`, `Playlist`, `PlaylistItem`)를 Domain 모델로 변환하는 private `toDomain()` 확장 함수 보유.
-*   IO 스레드 전환은 별도로 수행하지 않음 (필요 시 UseCase 또는 호출부에서 처리).
+*   `saveAccessToken` / `clearAccessToken`은 `Preference`에 위임합니다.
 
 #### DI(Hilt) Modules 분리 기준
 Data 모듈의 의존성 주입은 다음 구조로 모듈화(Hilt)되어 있습니다.
@@ -189,6 +270,8 @@ Data 모듈의 의존성 주입은 다음 구조로 모듈화(Hilt)되어 있습
 
 ## 3. 🔄 Data Flow (데이터 흐름)
 
+### 서울 문화행사 (페이지네이션)
+
 ```mermaid
 sequenceDiagram
     participant UI as MainScreen (Compose)
@@ -199,20 +282,49 @@ sequenceDiagram
     participant API as SeoulApi (Ktor)
 
     UI->>VM: collectAsState(events, loadState)
-    VM->>UC: initialize() → seoulUseCase()
-    UC->>Repo: getCulturalEvents()
-    Repo->>DB: getAll() [withContext(ioDispatcher)]
-    alt 캐시 유효
-        DB-->>Repo: localData
-        Repo-->>UC: List<CulturalEvent>
-    else 원격 호출 필요
-        Repo->>API: getCulturalEvent(pageEnd=100)
+    VM->>UC: loadNextPage() → seoulUseCase(start, end)
+    UC->>Repo: getCulturalEvents(start, end)
+    Repo->>API: fetchFromRemote(start, end) [withContext(ioDispatcher)]
+    alt 원격 성공
         API-->>Repo: CulturalEventInfoResponse
-        Repo->>DB: deleteAll() + insertAll(entities)
-        Repo-->>UC: List<CulturalEvent>
+        Repo->>DB: (start==1) deleteAll() + insertAll(entities)
+        Repo-->>UC: CulturalEventPage(events, totalCount)
+    else 원격 실패 + 첫 페이지
+        Repo->>DB: getAll() [Fallback]
+        DB-->>Repo: localData
+        Repo-->>UC: CulturalEventPage(localData, localData.size)
     end
-    UC-->>VM: List<CulturalEvent>
-    VM-->>UI: _events, _loadState 업데이트
+    UC-->>VM: CulturalEventPage
+    VM-->>UI: _events 누적, _loadState 업데이트
+    Note over UI,VM: 스크롤 끝 도달 시 loadNextPage() 재호출
+```
+
+### Google OAuth 인증 흐름
+
+```mermaid
+sequenceDiagram
+    participant MA as MainActivity
+    participant GSM as GoogleSignInManager
+    participant VM as MainViewModel
+    participant UC as SaveGoogleTokenUseCase
+    participant Repo as GoogleRepositoryImpl
+    participant Pref as Preference (DataStore)
+
+    MA->>VM: onGoogleSignInStarted() → GoogleAuthState.Authenticating
+    MA->>GSM: signIn() (suspend)
+    GSM->>GSM: Identity.authorize() → hasResolution?
+    alt 토큰 즉시 발급
+        GSM-->>MA: token: String
+    else UI 인증 필요
+        GSM->>MA: ActivityResultLauncher.launch(IntentSenderRequest)
+        MA-->>GSM: RESULT_OK + accessToken
+        GSM-->>MA: token: String
+    end
+    MA->>VM: onGoogleSignInSuccess(token)
+    VM->>UC: saveGoogleTokenUseCase(token)
+    UC->>Repo: saveAccessToken(token)
+    Repo->>Pref: saveGoogleAccessToken(token)
+    VM-->>MA: GoogleAuthState.Authenticated
 ```
 
 ---
@@ -224,21 +336,30 @@ mos/
 ├── app/
 │   └── src/main/java/app/peter/mos/
 │       ├── MosApplication.kt          # @HiltAndroidApp
-│       ├── MainActivity.kt            # @AndroidEntryPoint, SplashScreen
-│       ├── MainViewModel.kt           # @HiltViewModel, StateFlow 상태 관리
+│       ├── MainActivity.kt            # @AndroidEntryPoint, SplashScreen, Google 로그인 트리거
+│       ├── MainViewModel.kt           # @HiltViewModel, 페이지네이션·인증 상태 관리
+│       ├── LoadState.kt               # sealed interface (Idle/Loading/LoadingMore/Success/Error)
+│       ├── GoogleAuthState.kt         # sealed interface (Unauthenticated/Authenticating/Authenticated/Error)
+│       ├── auth/
+│       │   └── GoogleSignInManager.kt # Google Identity SDK OAuth 래퍼
 │       └── ui/
-│           ├── MainScreen.kt          # Composable UI (Stateful + Stateless 분리)
+│           ├── MainScreen.kt          # Composable UI (무한스크롤 포함)
 │           └── theme/                 # Color, Theme, Type
 ├── domain/
 │   └── src/main/java/app/peter/mos/domain/
 │       ├── model/
-│       │   ├── seoul/CulturalEvent.kt
+│       │   ├── seoul/
+│       │   │   ├── CulturalEvent.kt   # 24개 필드 데이터 모델
+│       │   │   └── CulturalEventPage.kt # 페이지네이션 래퍼 (events + totalCount)
 │       │   └── google/ (PlayItem, PlayList, Subscription)
 │       ├── repository/
-│       │   ├── SeoulRepository.kt     # interface
-│       │   └── GoogleRepository.kt    # interface
+│       │   ├── SeoulRepository.kt     # interface — getCulturalEvents(start, end)
+│       │   └── GoogleRepository.kt    # interface — 조회 3개 + 토큰 관리 2개
 │       └── usecase/
-│           └── SeoulUseCase.kt        # invoke() → repository 위임
+│           ├── SeoulUseCase.kt        # invoke(start, end) → repository 위임
+│           └── GoogleUseCase.kt       # GetSubscriptionsUseCase, GetPlaylistUseCase,
+│                                      # GetContentDetailUseCase, SaveGoogleTokenUseCase,
+│                                      # ClearGoogleTokenUseCase
 └── data/
     └── src/main/java/app/peter/mos/data/
         ├── di/
@@ -247,15 +368,16 @@ mos/
         │   ├── DataModule.kt          # NetworkModule, RepositoryBindingModule, DatabaseModule
         │   └── DispatchersModule.kt   # CoroutineDispatcher Hilt 제공
         ├── repositories/
-        │   ├── SeoulRepositoryImpl.kt # Cache-then-Network, @IoDispatcher 사용
-        │   └── GoogleRepositoryImpl.kt # DTO → Domain 매핑
+        │   ├── SeoulRepositoryImpl.kt # Remote-First + Fallback 전략, @IoDispatcher 사용
+        │   └── GoogleRepositoryImpl.kt # DTO → Domain 매핑, Preference 토큰 관리 포함
         ├── source/
         │   ├── local/
+        │   │   ├── Local.kt           # (미사용 — 활용 계획 미정)
         │   │   ├── dao/CulturalEventDao.kt
-        │   │   └── entity/CulturalEventEntity.kt
+        │   │   └── entity/CulturalEventEntity.kt  # 24개 필드 + createdAt
         │   ├── model/                 # Data 계층 DTO 모델
-        │   │   ├── seoul/cultural/
-        │   │   └── google/youtube/
+        │   │   ├── seoul/cultural/    # CulturalEventInfoResponse, CulturalEventInfo, CulturalEventInfoData
+        │   │   └── google/youtube/    # YoutubeResponse, Subscription, Playlist, PlaylistItem
         │   └── remote/
         │       ├── SeoulApi.kt        # Ktor 기반
         │       └── GoogleApi.kt       # Retrofit 기반
@@ -263,6 +385,6 @@ mos/
             ├── db/AppDatabase.kt
             ├── network/
             │   ├── Network.kt         # HttpClient(CIO) 팩토리
-            │   └── GoogleAuthInterceptor.kt
-            └── preference/Preference.kt  # DataStore @Singleton
+            │   └── GoogleAuthInterceptor.kt  # runBlocking으로 DataStore 토큰 읽어 헤더 추가
+            └── preference/Preference.kt     # DataStore @Singleton
 ```
