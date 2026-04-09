@@ -23,6 +23,7 @@
 | 2026-03-31 | `GoogleSignInManager` 구현 (Google Identity SDK OAuth, `suspendCancellableCoroutine` 코루틴 래핑) |
 | 2026-03-31 | `MainActivity`에서 앱 시작 시 Google OAuth 자동 실행 및 토큰 DataStore 저장 연동 |
 | 2026-03-31 | `SeoulRepositoryImpl` — 세션 캐시 플래그 방식 제거, Remote-First + Fallback 전략으로 단순화 |
+| 2026-04-09 | `GoogleAuthInterceptor` — `runBlocking` 제거, `Preference`에 `StateFlow` 캐시 도입으로 OkHttp 스레드 블로킹 해소 |
 
 ---
 
@@ -104,7 +105,7 @@
   > - TTL 초과: 전략 B처럼 캐시 즉시 표시 + 백그라운드 갱신.
   > - 신선도와 서버 부하 사이의 균형점. 가장 세밀한 제어 가능.
 
-- [ ] **`GoogleAuthInterceptor` 코루틴 개선**
+- [x] **`GoogleAuthInterceptor` 코루틴 개선**
   - 현재 `runBlocking` 사용 → OkHttp Interceptor의 스레드 제약 내 안전한 비동기 처리 방안 검토
 
 ---
@@ -137,5 +138,5 @@
 
 ---
 
-*마지막 업데이트: 2026-03-31 (위치 기반 탐색 목표 추가)*
+*마지막 업데이트: 2026-04-09 (`GoogleAuthInterceptor` 코루틴 개선 완료)*
 *관련 문서: [ARCHITECTURE.md](./ARCHITECTURE.md)*
